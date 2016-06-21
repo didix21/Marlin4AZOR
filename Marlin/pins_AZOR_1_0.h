@@ -3,8 +3,8 @@
 * Azor_1.0 pin assignment
 * 
 ****************************************************************************************/
-#define INVERTED_HEATER_PINS
-#define INVERTED_MOSFET_CHANNELS
+#define INVERTED_HEATER_PINS 
+#define INVERTED_MOSFET_CHANNELS // It is necessary for AZOR electronics, the mosfets works inverted respect RAMPS
 // Changed
 #define X_STEP_PIN         14
 #define X_DIR_PIN          15
@@ -18,11 +18,11 @@
 #define Y_MIN_PIN          28
 #define Y_MAX_PIN          -1
 
-#define Z_STEP_PIN         46
-#define Z_DIR_PIN          48
-#define Z_ENABLE_PIN       62
-#define Z_MIN_PIN          18
-#define Z_MAX_PIN          19
+#define Z_STEP_PIN         5
+#define Z_DIR_PIN          4
+#define Z_ENABLE_PIN       -1 //138 of SAM3X8E
+#define Z_MIN_PIN          -1 //84 of SAM3X8E, 6 analog pin of Arduino Due
+#define Z_MAX_PIN          -1
 #define Z_PROBE_PIN        -1
 
 #define Y2_STEP_PIN        36
