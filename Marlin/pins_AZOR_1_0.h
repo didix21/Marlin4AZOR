@@ -64,18 +64,9 @@
   #define FILRUNOUT_PIN        4
 #endif
 
-#if MB(RAMPS_13_EFB) || MB(RAMPS_13_EFF)
-  #define FAN_PIN            9 // (Sprinter config)
-  #if MB(RAMPS_13_EFF)
-    #define CONTROLLERFAN_PIN  -1 // Pin used for the fan to cool controller
-  #endif
-#elif MB(RAMPS_13_EEF)
-  #define FAN_PIN            8
-#else
-  #define FAN_PIN            4 // IO pin. Buffer needed
-#endif
+#define FAN_PIN            34 //FAN_0 for AZOR
 
-#define PS_ON_PIN          12
+#define PS_ON_PIN          12 
 
 #if defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
   #define KILL_PIN           41
@@ -84,15 +75,15 @@
 #endif
 
 //Changed Heaters
-#define HEATER_0_PIN       63 // EXTRUDER 1 //Done
-#define HEATER_1_PIN       -1 // EXTRUDER 2
+#define HEATER_0_PIN       40 // EXTRUDER 1 //Done
+#define HEATER_1_PIN       38 // EXTRUDER 2
 #define HEATER_2_PIN       -1
 
 #define TEMP_0_PIN          6   // ANALOG NUMBERING
 #define TEMP_1_PIN         -1   // ANALOG NUMBERING
 #define TEMP_2_PIN         -1   // ANALOG NUMBERING
 
-#define HEATER_BED_PIN     8    // BED
+#define HEATER_BED_PIN     6    // BED
 
 #define TEMP_BED_PIN       4   // ANALOG NUMBERING
 
