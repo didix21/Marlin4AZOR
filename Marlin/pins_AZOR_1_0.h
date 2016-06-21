@@ -45,8 +45,8 @@
 #define E1_ENABLE_PIN      30
 
 #define SDPOWER            -1
-#define SDSS               53
-#define LED_PIN            13
+#define SDSS               -1
+#define LED_PIN            -1
 
 #if MB(RAMPS_13_EEB) && defined(FILAMENT_SENSOR)  // FMM added for Filament Extruder
   // define analog pin for the filament width sensor input
@@ -84,9 +84,9 @@
 #endif
 
 #if MB(RAMPS_13_EFF)
-  #define HEATER_0_PIN       8
+  #define HEATER_0_PIN       63 // Extruder 1 //Done
 #else
-  #define HEATER_0_PIN       10   // EXTRUDER 1
+  #define HEATER_0_PIN       -1   // EXTRUDER 1
 #endif
 
 #if MB(RAMPS_13_EFB)
@@ -97,7 +97,7 @@
 
 #define HEATER_2_PIN       -1
 
-#define TEMP_0_PIN          9   // ANALOG NUMBERING
+#define TEMP_0_PIN          6   // ANALOG NUMBERING
 #define TEMP_1_PIN         -1   // ANALOG NUMBERING
 #define TEMP_2_PIN         -1   // ANALOG NUMBERING
 
@@ -107,7 +107,7 @@
   #define HEATER_BED_PIN     8    // BED
 #endif
 
-#define TEMP_BED_PIN       10   // ANALOG NUMBERING
+#define TEMP_BED_PIN       4   // ANALOG NUMBERING
 
 #ifdef NUM_SERVOS
   #define SERVO0_PIN         11
