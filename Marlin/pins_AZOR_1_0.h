@@ -83,44 +83,31 @@
   #define KILL_PIN           -1
 #endif
 
-#if MB(RAMPS_13_EFF)
-  #define HEATER_0_PIN       63 // Extruder 1 //Done
-#else
-  #define HEATER_0_PIN       -1   // EXTRUDER 1
-#endif
-
-#if MB(RAMPS_13_EFB)
-  #define HEATER_1_PIN       -1
-#else
-  #define HEATER_1_PIN       9    // EXTRUDER 2 (FAN On Sprinter)
-#endif
-
+//Changed Heaters
+#define HEATER_0_PIN       63 // EXTRUDER 1 //Done
+#define HEATER_1_PIN       -1 // EXTRUDER 2
 #define HEATER_2_PIN       -1
 
 #define TEMP_0_PIN          6   // ANALOG NUMBERING
 #define TEMP_1_PIN         -1   // ANALOG NUMBERING
 #define TEMP_2_PIN         -1   // ANALOG NUMBERING
 
-#if MB(RAMPS_13_EFF) || MB(RAMPS_13_EEF)
-  #define HEATER_BED_PIN     -1    // NO BED
-#else
-  #define HEATER_BED_PIN     8    // BED
-#endif
+#define HEATER_BED_PIN     8    // BED
 
 #define TEMP_BED_PIN       4   // ANALOG NUMBERING
 
-#ifdef NUM_SERVOS
-  #define SERVO0_PIN         11
-  #if NUM_SERVOS > 1
-    #define SERVO1_PIN        6
-    #if NUM_SERVOS > 2
-      #define SERVO2_PIN      5
-      #if NUM_SERVOS > 3
-        #define SERVO3_PIN    4
-      #endif
-    #endif
-  #endif
-#endif
+//#ifdef NUM_SERVOS
+//  #define SERVO0_PIN         11
+//  #if NUM_SERVOS > 1
+//    #define SERVO1_PIN        6
+//    #if NUM_SERVOS > 2
+//      #define SERVO2_PIN      5
+//      #if NUM_SERVOS > 3
+//        #define SERVO3_PIN    4
+//      #endif
+//    #endif
+//  #endif
+//#endif
 
 #ifdef ULTRA_LCD
 
