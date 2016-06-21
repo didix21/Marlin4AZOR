@@ -3,7 +3,8 @@
 * Azor_1.0 pin assignment
 * 
 ****************************************************************************************/
-
+#define INVERTED_HEATER_PINS
+#define INVERTED_MOSFET_CHANNELS
 // Changed
 #define X_STEP_PIN         14
 #define X_DIR_PIN          15
