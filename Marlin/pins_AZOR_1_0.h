@@ -20,9 +20,9 @@
 // Changed
 #define Z_STEP_PIN          5
 #define Z_DIR_PIN           4
-//#define Z_ENABLE_PORT       PIOC
-//#define Z_ENABLE_MASK       0x08000000
-#define Z_ENABLE_PIN       -1 //SAM3X8E={Pin=138,Port=PC5,Register=0x08000000} 
+#define Z_ENABLE_PORT       PIOC
+#define Z_ENABLE_MASK       0x08000000
+#define Z_ENABLE_PIN       138 //SAM3X8E={Pin=138,Port=PC5,Register=0x08000000} 
 #define Z_MIN_PIN          -1 //84 of SAM3X8E, 6 analog pin of Arduino Due
 #define Z_MAX_PIN          -1
 #define Z_PROBE_PIN        -1

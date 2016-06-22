@@ -95,8 +95,8 @@ static inline void digitalFastWrite(int pin, bool v) {
 	g_APinDescription[pin].ulPin, g_APinDescription[pin].ulPinConfiguration)
 
 // SET_OUTPUT_REGISTER enable the pin register, no conversions
-//#define SET_OUTPUT_REGISTER(_PORT_SAM,_MASK_SAM) PIO_Configure(_PORT_SAM,PIO_OUTPUT_1, \
-//  _MASK_SAM,0)
+#define SET_OUTPUT_REGISTER(_PORT_SAM,_MASK_SAM) PIO_Configure(_PORT_SAM,PIO_OUTPUT_1, \
+  _MASK_SAM,0)
 
 /// toggle a pin	
 #define TOGGLE(pin) WRITE(pin,!READ(pin))
