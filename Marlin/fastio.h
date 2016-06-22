@@ -93,7 +93,8 @@ static inline void digitalFastWrite(int pin, bool v) {
 
 #define	SET_OUTPUT(pin) PIO_Configure(g_APinDescription[pin].pPort, PIO_OUTPUT_1, \
 	g_APinDescription[pin].ulPin, g_APinDescription[pin].ulPinConfiguration)
-  
+
+// SET_OUTPUT_REGISTER enable the pin register, no conversions
 #define SET_OUTPUT_REGISTER(_PORT_SAM,_MASK_SAM) PIO_Configure(_PORT_SAM,PIO_OUTPUT_1, \
   _MASK_SAM,0)
 
