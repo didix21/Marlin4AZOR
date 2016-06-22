@@ -66,7 +66,7 @@ static inline void digitalFastWrite(int pin, bool v) {
 #define _FASTREAD(IO) ((bool)(DIO ## IO ## _WPORT -> PIO_PDSR & (MASK(DIO ## IO ## _PIN))))
 
 // FASTREAD_REGISTER reads direcly the pin register, no conversions
-#define _FASTREAD_REGISTER(_PORT_SAM,_MASK_SAM) ((bool)(_PORT_SAM -> PIO_PDSR & _MASK_SAM))
+//#define _FASTREAD_REGISTER(_PORT_SAM,_MASK_SAM) ((bool)(_PORT_SAM -> PIO_PDSR & _MASK_SAM))
 
 
 
@@ -75,9 +75,9 @@ static inline void digitalFastWrite(int pin, bool v) {
                              } while (0)
 
 // _FASTWRITE_REGISTER write directly to the pin register, no conversions
-#define _FASTWRITE_REGISTER(_PORT_SAM,_MASK_SAM,v) do{ if(v) {_PORT_SAM -> PIO_SODR = _PORT_SAM -> PIO_SODR | _MASK_SAM;} \
-                                                       else  {_PORT_SAM -> PIO_CODR = _PORT_SAM -> PIO_CODR | _MASK_SAM;}; \
-                                                     } while (0)
+//#define _FASTWRITE_REGISTER(_PORT_SAM,_MASK_SAM,v) do{ if(v) {_PORT_SAM -> PIO_SODR = _PORT_SAM -> PIO_SODR | _MASK_SAM;} \
+//                                                       else  {_PORT_SAM -> PIO_CODR = _PORT_SAM -> PIO_CODR | _MASK_SAM;}; \
+//                                                     } while (0)
 
 // #define READ(pin) digitalFastRead(pin)
 #define READ(pin) _FASTREAD(pin)
@@ -95,8 +95,8 @@ static inline void digitalFastWrite(int pin, bool v) {
 	g_APinDescription[pin].ulPin, g_APinDescription[pin].ulPinConfiguration)
 
 // SET_OUTPUT_REGISTER enable the pin register, no conversions
-#define SET_OUTPUT_REGISTER(_PORT_SAM,_MASK_SAM) PIO_Configure(_PORT_SAM,PIO_OUTPUT_1, \
-  _MASK_SAM,0)
+//#define SET_OUTPUT_REGISTER(_PORT_SAM,_MASK_SAM) PIO_Configure(_PORT_SAM,PIO_OUTPUT_1, \
+//  _MASK_SAM,0)
 
 /// toggle a pin	
 #define TOGGLE(pin) WRITE(pin,!READ(pin))
@@ -395,4 +395,8 @@ static inline void digitalFastWrite(int pin, bool v) {
 #define DIO91_PIN 15
 #define DIO91_WPORT PIOB
 
+// Added for those pins that are not assigned in arduino DUE
+// DIO?_PIN X, where ? = SAM3X8E's pin nº and X is port bit number
+#define DIO138_PIN 27
+#define DIO138_WPORT PIOC
 #endif	/* _FASTIO_H */
