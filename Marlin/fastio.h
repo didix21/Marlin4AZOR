@@ -30,11 +30,11 @@
 
 // Variables to use with directly with registers
 #ifndef _PORT_SAM
-  #define _PORT_SAM
+  #define _PORT_SAM // SAM3X8E's PORTX
 #endif
 
 #ifndef _MASK_SAM
-  #define _MASK_SAM
+  #define _MASK_SAM // PINX mask of SAM3X8E
 #endif
 /*
   utility functions
@@ -64,6 +64,9 @@ static inline void digitalFastWrite(int pin, bool v) {
 // }
 
 #define _FASTREAD(IO) ((bool)(DIO ## IO ## _WPORT -> PIO_PDSR & (MASK(DIO ## IO ## _PIN))))
+
+// FASTREAD_REGISTER reads direcly from the pin register, no conversions
+#define _FASTREAD_REGISTER ((bool)(_PORT_SAM -> PIO_PDSR & _MASK_SAM))
 
 #define _FASTWRITE(IO, v) do {  if (v) {DIO ## IO ## _WPORT -> PIO_SODR = MASK(DIO ## IO ##_PIN); } \
                                 else {DIO ##  IO ## _WPORT -> PIO_CODR = MASK(DIO ## IO ## _PIN); }; \
