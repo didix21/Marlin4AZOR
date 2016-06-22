@@ -65,14 +65,19 @@ static inline void digitalFastWrite(int pin, bool v) {
 
 #define _FASTREAD(IO) ((bool)(DIO ## IO ## _WPORT -> PIO_PDSR & (MASK(DIO ## IO ## _PIN))))
 
-// FASTREAD_REGISTER reads direcly from the pin register, no conversions
+// FASTREAD_REGISTER reads direcly the pin register, no conversions
 #define _FASTREAD_REGISTER(_PORT_SAM,_MASK_SAM) ((bool)(_PORT_SAM -> PIO_PDSR & _MASK_SAM))
 
-// _FASTWRITE_REGISTER write directly to
+
 
 #define _FASTWRITE(IO, v) do {  if (v) {DIO ## IO ## _WPORT -> PIO_SODR = MASK(DIO ## IO ##_PIN); } \
                                 else {DIO ##  IO ## _WPORT -> PIO_CODR = MASK(DIO ## IO ## _PIN); }; \
-                          } while (0)
+                             } while (0)
+
+// _FASTWRITE_REGISTER write directly to the pin register, no conversions
+#define _FASTWRITE_REGISTER(_PORT_SAM,_MASK_SAM,v) do{ if(v) {_PORT_SAM -> PIO_SODR = _PORT_SAM -> PIO_SODR | _MASK_SAM;} \
+                                                       else  {_PORT_SAM -> PIO_CODR = _PORT_SAM -> PIO_CODR | _MASK_SAM;}; \
+                                                     }; while (0)
 
 // #define READ(pin) digitalFastRead(pin)
 #define READ(pin) _FASTREAD(pin)
