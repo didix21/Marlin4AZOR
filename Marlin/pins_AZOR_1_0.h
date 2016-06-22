@@ -17,29 +17,29 @@
 #define Y_ENABLE_PIN       27
 #define Y_MIN_PIN          28
 #define Y_MAX_PIN          -1
-
-#define Z_STEP_PIN         5
-#define Z_DIR_PIN          4
-#define Z_ENABLE_PIN      -1 // 0x08000000 Register //138 of SAM3X8E
+// Changed
+#define Z_STEP_PIN          5
+#define Z_DIR_PIN           4
+#define Z_ENABLE_PIN       -1 //SAM3X8E={Pin=138,Port=PC5,Register=0x08000000} 
 #define Z_MIN_PIN          -1 //84 of SAM3X8E, 6 analog pin of Arduino Due
 #define Z_MAX_PIN          -1
 #define Z_PROBE_PIN        -1
+// Changed
+#define Y2_STEP_PIN        -1
+#define Y2_DIR_PIN         -1
+#define Y2_ENABLE_PIN      -1
+// Changed
+#undef Z2_STEP_PIN         -1
+#undef Z2_DIR_PIN          -1
+#undef Z2_ENABLE_PIN       -1
+// Changed
+#define Z2_STEP_PIN        -1
+#define Z2_DIR_PIN         -1
+#define Z2_ENABLE_PIN      -1
 
-#define Y2_STEP_PIN        36
-#define Y2_DIR_PIN         34
-#define Y2_ENABLE_PIN      30
-
-#undef Z2_STEP_PIN
-#undef Z2_DIR_PIN
-#undef Z2_ENABLE_PIN
-
-#define Z2_STEP_PIN        36
-#define Z2_DIR_PIN         34
-#define Z2_ENABLE_PIN      30
-
-#define E0_STEP_PIN        26
+#define E0_STEP_PIN        26 //Arduino_Due{PIN=A0}
 #define E0_DIR_PIN         28
-#define E0_ENABLE_PIN      24
+#define E0_ENABLE_PIN      24 //SAM3X8E={Pin=25,Port=PA5,Register=0x00000020} 
 
 #define E1_STEP_PIN        36
 #define E1_DIR_PIN         34

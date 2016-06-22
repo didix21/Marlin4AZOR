@@ -28,6 +28,14 @@
 #ifndef	_FASTIO_H
 #define	_FASTIO_H
 
+// Variables to use with directly with registers
+#ifndef _PORT_SAM
+  #define _PORT_SAM
+#endif
+
+#ifndef _MASK_SAM
+  #define _MASK_SAM
+#endif
 /*
   utility functions
 */
@@ -71,6 +79,9 @@ static inline void digitalFastWrite(int pin, bool v) {
 
 #define	SET_OUTPUT(pin) PIO_Configure(g_APinDescription[pin].pPort, PIO_OUTPUT_1, \
 	g_APinDescription[pin].ulPin, g_APinDescription[pin].ulPinConfiguration)
+  
+#define SET_OUTPUT_REGISTER(_PORT_SAM,_MASK_SAM) PIO_Configure(_PORT_SAM,PIO_OUTPUT_1, \
+  _MASK_SAM,0)
 
 /// toggle a pin	
 #define TOGGLE(pin) WRITE(pin,!READ(pin))
