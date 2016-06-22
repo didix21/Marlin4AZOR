@@ -3108,12 +3108,16 @@ inline void gcode_M42() {
       if (pin_number == FAN_PIN) fanSpeed = pin_status;
     #endif
 
-    if (pin_number > -1) {
+    if (pin_number > -1 && pin_number != Z_ENABLE_PIN) {
       pinMode(pin_number, OUTPUT);
       digitalWrite(pin_number, pin_status);
       analogWrite(pin_number, pin_status);
-    }
-  } // code_seen('S')
+    } 
+    else if (pin_number > -1 && pin_number == Z_ENABLE_PIN){
+      Z_ENABLE_INIT;     
+      WRITE_REGISTER(Z_ENABLE_PORT,Z_ENABLE_MASK,pin_status);    
+    } // code_seen('S')
+  }
 }
 
 #if defined(ENABLE_AUTO_BED_LEVELING) && defined(Z_PROBE_REPEATABILITY_TEST)
