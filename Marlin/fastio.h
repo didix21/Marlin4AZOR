@@ -84,6 +84,10 @@ static inline void digitalFastWrite(int pin, bool v) {
 #define WRITE_VAR(pin, v) digitalFastWrite(pin, v)
 #define WRITE(pin, v) _FASTWRITE(pin, v)
 
+// Used for Enable, Read and Write direclty using the register value of the PINX
+#define READ_REGISTER(_PORT_SAM,_MASK_SAM) _FASTREAD_REGISTER(_PORT_SAM,_MASK_SAM)
+#define WRITE_REGISTER(_PORT_SAM,_MASK_SAM,v) _FASTWRITE_REGISTER(_PORT_SAM,_MASK_SAM,v)
+
 #define	SET_INPUT(pin) pmc_enable_periph_clk(g_APinDescription[pin].ulPeripheralId); \
     PIO_Configure(g_APinDescription[pin].pPort, PIO_INPUT, g_APinDescription[pin].ulPin, 0) 
 
