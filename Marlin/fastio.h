@@ -28,13 +28,16 @@
 #ifndef	_FASTIO_H
 #define	_FASTIO_H
 
+#define _PIN_SAM
 // Variables to use with directly with registers
 #ifndef _PORT_SAM
   #define _PORT_SAM // SAM3X8E's PORTX
 #endif
 
-#ifndef _MASK_SAM
-  #define _MASK_SAM // PINX mask of SAM3X8E
+
+
+#ifndef _PIN_SAM
+  #define _PIN_SAM 
 #endif
 /*
   utility functions
@@ -44,6 +47,9 @@
   #define MASK(PIN)  (1 << PIN)
 #endif
 
+#ifndef _MASK_SAM
+  #define _MASK_SAM // PINX mask of SAM3X8E
+#endif
 
 // --------------------------------------------------------------------------
 //
@@ -71,7 +77,7 @@ static inline void digitalFastWrite(int pin, bool v) {
 
 
 #define _FASTWRITE(IO, v) do {  if (v) {DIO ## IO ## _WPORT -> PIO_SODR = MASK(DIO ## IO ##_PIN); } \
-                                else {DIO ##  IO ## _WPORT -> PIO_CODR = MASK(DIO ## IO ## _PIN); }; \
+                                else {DIO ## IO ## _WPORT -> PIO_CODR = MASK(DIO ## IO ## _PIN); }; \
                              } while (0)
 
 // _FASTWRITE_REGISTER write directly to the pin register, no conversions
@@ -97,6 +103,8 @@ static inline void digitalFastWrite(int pin, bool v) {
 // SET_OUTPUT_REGISTER enable the pin register, no conversions
 #define SET_OUTPUT_REGISTER(_PORT_SAM,_MASK_SAM) PIO_Configure(_PORT_SAM,PIO_OUTPUT_1, \
   _MASK_SAM,0)
+//#define SET_OUTPUT_REGISTER(_PIN_SAM) PIO_Configure(DIO ## _PIN_SAM ## _WPORT,PIO_OUTPUT_1, \
+//  MASK(DIO ## _PIN_SAM ## _PIN),0)
 
 /// toggle a pin	
 #define TOGGLE(pin) WRITE(pin,!READ(pin))
@@ -114,6 +122,7 @@ static inline void digitalFastWrite(int pin, bool v) {
 
 // Shorthand
 #define OUT_WRITE(IO, v) { SET_OUTPUT(IO); WRITE(IO, v); }
+
 
 /*
 ** direct pins
@@ -395,8 +404,18 @@ static inline void digitalFastWrite(int pin, bool v) {
 #define DIO91_PIN 15
 #define DIO91_WPORT PIOB
 
-// Added for those pins that are not assigned in arduino DUE
-// DIO?_PIN X, where ? = SAM3X8E's pin nº and X is port bit number
-#define DIO138_PIN 27
-#define DIO138_WPORT PIOC
+// Added for those pins that are not assigned in Arduino DUE
+// DIO?_PIN X, where (? =SAM3X8E's pin nº + '0') and (X is port bit number)
+#define DIO230_PIN 0
+#define DIO230_WPORT PIOA
+
+#define DIO240_PIN 1
+#define DIO240_WPORT PIOA
+
+#define DIO250_PIN 5
+#define DIO250_WPORT PIOA 
+
+#define DIO1380_PIN 27
+#define DIO1380_WPORT PIOC
+
 #endif	/* _FASTIO_H */
