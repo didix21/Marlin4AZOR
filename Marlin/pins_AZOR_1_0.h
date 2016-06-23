@@ -89,13 +89,13 @@
 #define HEATER_1_PIN       38 // EXTRUDER 2
 #define HEATER_2_PIN       -1
 
-#define TEMP_0_PIN          0   // ANALOG NUMBERING
-#define TEMP_1_PIN         -1   // ANALOG NUMBERING
+#define TEMP_0_PIN          4   // ANALOG NUMBERING
+#define TEMP_1_PIN          0   // ANALOG NUMBERING
 #define TEMP_2_PIN         -1   // ANALOG NUMBERING
 
 #define HEATER_BED_PIN     6    // BED
 
-#define TEMP_BED_PIN       4   // ANALOG NUMBERING
+#define TEMP_BED_PIN       5   // ANALOG NUMBERING
 
 //#ifdef NUM_SERVOS
 //  #define SERVO0_PIN         11
