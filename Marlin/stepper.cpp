@@ -888,7 +888,7 @@ void st_init() {
   #if HAS_Z_MIN
     SET_INPUT(Z_MIN_PIN);
     #ifdef ENDSTOPPULLUP_ZMIN
-      PULLUP(Z_MIN_PIN,HIGH);
+      PULLUP(Z_MIN_PIN_AX,HIGH); //Changed 
     #endif
   #endif
 

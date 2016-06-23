@@ -18,12 +18,13 @@
 #define Y_MIN_PIN          28
 #define Y_MAX_PIN          -1
 // Changed
-#define Z_STEP_PIN          5
-#define Z_DIR_PIN           4
-#define Z_ENABLE_PORT       PIOC
-#define Z_ENABLE_MASK       1<<27
-#define Z_ENABLE_PIN        1380 //SAM3X8E={Pin=138,Port=PC5,Register=0x08000000} 
-#define Z_MIN_PIN          -1 //84 of SAM3X8E, 6 analog pin of Arduino Due
+#define Z_STEP_PIN         5
+#define Z_DIR_PIN          4
+#define Z_ENABLE_PORT      PIOC
+#define Z_ENABLE_MASK      1<<27
+#define Z_ENABLE_PIN       1380 //SAM3X8E={Pin=138,Port=PC5,Register=0x08000000} 
+#define Z_MIN_PIN          60 /*A6=60*/ //84 of SAM3X8E, 6 analog pin of Arduino Due
+#define Z_MIN_PIN_AX       A6 
 #define Z_MAX_PIN          -1
 #define Z_PROBE_PIN        -1
 // Changed
@@ -88,7 +89,7 @@
 #define HEATER_1_PIN       38 // EXTRUDER 2
 #define HEATER_2_PIN       -1
 
-#define TEMP_0_PIN          6   // ANALOG NUMBERING
+#define TEMP_0_PIN          0   // ANALOG NUMBERING
 #define TEMP_1_PIN         -1   // ANALOG NUMBERING
 #define TEMP_2_PIN         -1   // ANALOG NUMBERING
 
