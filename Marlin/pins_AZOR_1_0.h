@@ -49,10 +49,10 @@
 #define E0_ENABLE_PIN      250 //SAM3X8E={Pin=25,Port=PA5,Register=0x00000020} 
 #define E0_ENABLE_PORT     PIOA
 #define E0_ENABLE_MASK     1<<5
-
-#define E1_STEP_PIN        36
-#define E1_DIR_PIN         34
-#define E1_ENABLE_PIN      30
+// Changed
+#define E1_STEP_PIN        41
+#define E1_DIR_PIN         35
+#define E1_ENABLE_PIN      37
 
 #define SDPOWER            -1
 #define SDSS               -1
