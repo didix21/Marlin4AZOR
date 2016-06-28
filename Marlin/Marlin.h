@@ -49,11 +49,11 @@ typedef unsigned long millis_t;
   #ifdef BTENABLED
     #define MYSERIAL bt
   #else
-    #define MYSERIAL SerialUSB
+    #define MYSERIAL Serial
   #endif // BTENABLED
 #else
   #ifndef MYSERIAL
-    #define MYSERIAL SerialUSB
+    #define MYSERIAL Serial
   #endif
 #endif
 
