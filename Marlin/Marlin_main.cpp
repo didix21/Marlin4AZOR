@@ -617,6 +617,8 @@ void servo_init() {
  *    • Z probe sled
  *    • status LEDs
  */
+
+
 void setup() {
   setup_killpin();
   setup_filrunoutpin();
@@ -706,6 +708,9 @@ void setup() {
     pinMode(STAT_LED_BLUE, OUTPUT);
     digitalWrite(STAT_LED_BLUE, LOW); // turn it off
   #endif  
+
+  Serial.begin(9600);
+  
 }
 
 /**
@@ -719,14 +724,17 @@ void setup() {
  *  - Call LCD update
  */
  int firstTime = 1;
- int initialDelayForComunication = 10000;
+ int initialDelayForComunication = 5000;
 void loop() {
   // This has to be deleted in newer versions.
   // Delete  
   if(firstTime){
     delay(initialDelayForComunication); // This to ensure comunications!!!!
+    MYSERIAL.println("The printer is Ready");
     firstTime = 0;
   }
+  
+  
   // Delete until here
   if (commands_in_queue < BUFSIZE - 1) get_command();
   
