@@ -629,6 +629,8 @@ void setup() {
   #endif
 
   MYSERIAL.begin(BAUDRATE);
+//  usbSerial.begin(usbBAUDRATE);
+  
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
 
@@ -709,7 +711,7 @@ void setup() {
     digitalWrite(STAT_LED_BLUE, LOW); // turn it off
   #endif  
 
-  Serial.begin(9600);
+ // Serial.begin(9600);
   
 }
 
@@ -732,6 +734,8 @@ void loop() {
     delay(initialDelayForComunication); // This to ensure comunications!!!!
     MYSERIAL.println("The printer is Ready");
     firstTime = 0;
+
+//    usbSerial.println("The printer is Ready");
   }
   
   

@@ -57,6 +57,12 @@ typedef unsigned long millis_t;
   #endif
 #endif
 
+//#if (MYSERIAL == #Serial)
+//  #ifndef usbSerial
+//    #define usbSerial SerialUSB
+//  #endif 
+//#endif
+
 #define SERIAL_CHAR(x) MYSERIAL.write(x)
 #define SERIAL_EOL SERIAL_CHAR('\n')
 
