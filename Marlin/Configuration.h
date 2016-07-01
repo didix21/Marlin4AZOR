@@ -57,13 +57,18 @@ Here are some standard links for getting your machine calibrated:
 // This allows the connection of wireless adapters (for instance) to non-default port pins.
 // Serial port 0 is still used by the Arduino bootloader regardless of this setting.
 // :[0,1,2,3,4,5,6,7]
-#define SERIAL_PORT 0
+//#define SERIAL_PORT 0
+
+// This deterimines the type of serial port that it is going to use in AZOR 1.0
+// Configure serialType as:
+// 0 := Serial Port 0 (Use this if you want to connect to the LCD touch panel)
+// 1 := Native Serial Port (Use this if you want to connect to the PC) 
+#define serialType 0
 
 // This determines the communication speed of the printer
 // :[2400,9600,19200,38400,57600,115200,250000]
 #define BAUDRATE 115200
 
-//#define usbBAUDRATE 115200
 
 // This enables the serial port associated to the Bluetooth interface
 //#define BTENABLED              // Enable BT interface on AT90USB devices

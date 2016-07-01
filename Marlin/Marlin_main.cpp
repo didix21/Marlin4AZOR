@@ -629,7 +629,7 @@ void setup() {
   #endif
 
   MYSERIAL.begin(BAUDRATE);
-//  usbSerial.begin(usbBAUDRATE);
+
   
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;

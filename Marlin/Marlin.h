@@ -53,15 +53,13 @@ typedef unsigned long millis_t;
   #endif // BTENABLED
 #else
   #ifndef MYSERIAL
-    #define MYSERIAL Serial
+    #if serialType == 0 // Set up serial type on configuration.h
+      #define MYSERIAL Serial
+    #elif serialType == 1
+      #define MYSERIAL SerialUSB
+    #endif
   #endif
 #endif
-
-//#if (MYSERIAL == #Serial)
-//  #ifndef usbSerial
-//    #define usbSerial SerialUSB
-//  #endif 
-//#endif
 
 #define SERIAL_CHAR(x) MYSERIAL.write(x)
 #define SERIAL_EOL SERIAL_CHAR('\n')
