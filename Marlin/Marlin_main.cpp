@@ -4686,6 +4686,262 @@ inline void gcode_M400() { st_synchronize(); }
 #endif // FILAMENT_SENSOR
 
 /**
+ * M408: Report JSON-style response
+ */
+inline void gcode_M408() {
+    // Dades fixes per provar que funciona.
+    SERIAL_PROTOCOLLN("{\"status\":\"I\",\"heaters\":[25.0,29.0,28.3],\"active\":[-273.1,0.0,0.0],\"standby\":[-273.1,0.0,0.0],\"hstat\":[0,2,1],\"pos\":[-11.00,0.00,0.00],\"extr\":[0.0,0.0],\"sfactor\":100.00, \"efactor\":[100.00,100.00],\"tool\":1,\"probe\":\"535\",\"fanPercent\":[75.0,0.0],\"fanRPM\":0,\"homed\":[0,0,0],\"fraction_printed\":0.572}");
+
+    /*bool firstOccurrence;
+    uint8_t type = 0;
+
+    if (code_seen('S')) type = code_value_byte();
+
+    SERIAL_PROTOCOLPGM("{\"status\":\"");
+    #ifdef SDSUPPORT
+      if (!movesplanned() && !IS_SD_PRINTING) SERIAL_PROTOCOLPGM("I"); // IDLING
+      else if (IS_SD_PRINTING) SERIAL_PROTOCOLPGM("P");                // SD PRINTING
+      else ECHO_M("B");                                                // SOMETHING ELSE, BUT SOMETHIG
+    #else
+      if (!movesplanned()) SERIAL_PROTOCOLPGM("I");   // IDLING
+      else SERIAL_PROTOCOLPGM("B");                   // SOMETHING ELSE, BUT SOMETHIG
+    #endif
+
+    ///////////////////
+    // FET FINS AQUI //
+    ///////////////////
+
+    //S'han de canviar coses, el resultat ha de ser el mateix (amb els valors correctes) que el que apareix a la descripcio del gcode a la WIki de RepRap
+    
+    SERIAL_PROTOCOLPGM("\"homed\":[");
+    if (axis_was_homed & (_BV(X_AXIS)|_BV(Y_AXIS)|_BV(Z_AXIS)) == (_BV(X_AXIS)|_BV(Y_AXIS)|_BV(Z_AXIS)))
+      ECHO_M("1, 1, 1");
+    else
+      ECHO_M("0, 0, 0");
+
+    ECHO_MV("],\"extr\":[", current_position[E_AXIS]);
+    ECHO_MV("],\"xyz\":[", current_position[X_AXIS]); // X
+    ECHO_MV(",", current_position[Y_AXIS]); // Y
+    ECHO_MV(",", current_position[Z_AXIS]); // Z
+
+    ECHO_MV("]},\"currentTool\":", active_extruder);
+
+    #if HAS(POWER_SWITCH)
+      ECHO_M(",\"params\": {\"atxPower\":");
+      ECHO_M(powersupply ? "1" : "0");
+    #else
+      ECHO_M(",\"params\": {\"NormPower\":");
+    #endif
+
+    ECHO_M(",\"fanPercent\":[");
+    ECHO_V(fanSpeed);
+
+    ECHO_MV("],\"speedFactor\":", feedrate_multiplier);
+
+    ECHO_M(",\"extrFactors\":[");
+    firstOccurrence = true;
+    for (uint8_t i = 0; i < EXTRUDERS; i++) {
+      if (!firstOccurrence) ECHO_M(",");
+      ECHO_V(extruder_multiplier[i]); // Really *100? 100 is normal
+      firstOccurrence = false;
+    }
+    ECHO_EM("]},");
+
+    ECHO_M("\"temps\": {");
+    #if HAS(TEMP_BED)
+      ECHO_MV("\"bed\": {\"current\":", degBed(), 1);
+      ECHO_MV(",\"active\":", degTargetBed(), 1);
+      ECHO_M(",\"state\":");
+      ECHO_M(degTargetBed() > 0 ? "2" : "1");
+      ECHO_M("},");
+    #endif
+    ECHO_M("\"heads\": {\"current\":[");
+    firstOccurrence = true;
+    for (uint8_t h = 0; h < HOTENDS; h++) {
+      if (!firstOccurrence) ECHO_M(",");
+      ECHO_V(degHotend(h), 1);
+      firstOccurrence = false;
+    }
+    ECHO_M("],\"active\":[");
+    firstOccurrence = true;
+    for (uint8_t h = 0; h < HOTENDS; h++) {
+      if (!firstOccurrence) ECHO_M(",");
+      ECHO_V(degTargetHotend(h), 1);
+      firstOccurrence = false;
+    }
+    ECHO_M("],\"state\":[");
+    firstOccurrence = true;
+    for (uint8_t h = 0; h < HOTENDS; h++) {
+      if (!firstOccurrence) ECHO_M(",");
+      ECHO_M(degTargetHotend(h) > EXTRUDER_AUTO_FAN_TEMPERATURE ? "2" : "1");
+      firstOccurrence = false;
+    }
+
+    ECHO_MV("]}},\"time\":", HAL::timeInMilliseconds());
+
+    switch (type) {
+      case 0:
+      case 1:
+        break;
+      case 2:
+        ECHO_EM(",");
+        ECHO_M("\"coldExtrudeTemp\":0,\"coldRetractTemp\":0.0,\"geometry\":\"");
+        #if MECH(CARTESIAN)
+          ECHO_M("cartesian");
+        #elif MECH(COREXY)
+          ECHO_M("corexy");
+        #elif MECH(COREYX)
+          ECHO_M("coreyx");
+        #elif MECH(COREXZ)
+          ECHO_M("corexz");
+        #elif MECH(COREZX)
+          ECHO_M("corezx");
+        #elif MECH(DELTA)
+          ECHO_M("delta");
+        #endif
+        ECHO_M("\",\"name\":\"");
+        ECHO_T(CUSTOM_MACHINE_NAME);
+        ECHO_M("\",\"tools\":[");
+        firstOccurrence = true;
+        for (uint8_t i = 0; i < EXTRUDERS; i++) {
+          if (!firstOccurrence) ECHO_M(",");
+          ECHO_MV("{\"number\":", i + 1);
+          #if HOTENDS > 1
+            ECHO_MV(",\"heaters\":[", i + 1);
+            ECHO_M("],");
+          #else
+            ECHO_M(",\"heaters\":[1],");
+          #endif
+          #if DRIVER_EXTRUDERS > 1
+            ECHO_MV("\"drives\":[", i);
+            ECHO_M("]");
+          #else
+            ECHO_M("\"drives\":[0]");
+          #endif
+          ECHO_M("}");
+          firstOccurrence = false;
+        }
+        break;
+      case 3:
+        ECHO_EM(",");
+        ECHO_M("\"currentLayer\":");
+        #if ENABLED(SDSUPPORT)
+          if (card.sdprinting && card.layerHeight > 0) { // ONLY CAN TELL WHEN SD IS PRINTING
+            ECHO_V((int) (current_position[Z_AXIS] / card.layerHeight));
+          }
+          else ECHO_V(0);
+        #else
+          ECHO_V(-1);
+        #endif
+        ECHO_M(",\"extrRaw\":[");
+        firstOccurrence = true;
+        for (uint8_t i = 0; i < EXTRUDERS; i++) {
+          if (!firstOccurrence) ECHO_M(",");
+          ECHO_V(current_position[E_AXIS] * extruder_multiplier[i]);
+          firstOccurrence = false;
+        }
+        ECHO_M("],");
+        #if ENABLED(SDSUPPORT)
+          if (card.sdprinting) {
+            ECHO_M("\"fractionPrinted\":");
+            float fractionprinted;
+            if (card.fileSize < 2000000) {
+              fractionprinted = (float)card.sdpos / (float)card.fileSize;
+            }
+            else fractionprinted = (float)(card.sdpos >> 8) / (float)(card.fileSize >> 8);
+            ECHO_V((float) floorf(fractionprinted * 1000) / 1000);
+            ECHO_M(",");
+          }
+        #endif
+        ECHO_M("\"firstLayerHeight\":");
+        #if ENABLED(SDSUPPORT)
+          if (card.sdprinting) ECHO_V(card.firstlayerHeight);
+          else ECHO_M("0");
+        #else
+          ECHO_M("0");
+        #endif
+        break;
+      case 4:
+      case 5:
+        ECHO_EM(",");
+        ECHO_M("\"axisMins\":[");
+        ECHO_V((int) X_MIN_POS);
+        ECHO_M(",");
+        ECHO_V((int) Y_MIN_POS);
+        ECHO_M(",");
+        ECHO_V((int) Z_MIN_POS);
+        ECHO_M("],\"axisMaxes\":[");
+        ECHO_V((int) X_MAX_POS);
+        ECHO_M(",");
+        ECHO_V((int) Y_MAX_POS);
+        ECHO_M(",");
+        ECHO_V((int) Z_MAX_POS);
+        ECHO_M("],\"planner.accelerations\":[");
+        ECHO_V(planner.acceleration_units_per_sq_second[X_AXIS]);
+        ECHO_M(",");
+        ECHO_V(planner.acceleration_units_per_sq_second[Y_AXIS]);
+        ECHO_M(",");
+        ECHO_V(planner.acceleration_units_per_sq_second[Z_AXIS]);
+        for (uint8_t i = 0; i < EXTRUDERS; i++) {
+          ECHO_M(",");
+          ECHO_V(planner.acceleration_units_per_sq_second[E_AXIS + i]);
+        }
+        ECHO_M("],");
+
+        #if MB(ALLIGATOR)
+          ECHO_M("\"currents\":[");
+          ECHO_V(motor_current[X_AXIS]);
+          ECHO_M(",");
+          ECHO_V(motor_current[Y_AXIS]);
+          ECHO_M(",");
+          ECHO_V(motor_current[Z_AXIS]);
+          for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
+            ECHO_M(",");
+            ECHO_V(motor_current[E_AXIS + i]);
+          }
+          ECHO_EM("],");
+        #endif
+
+        ECHO_M("\"firmwareElectronics\":\"");
+        #if MB(RAMPS_13_HFB) || MB(RAMPS_13_HHB) || MB(RAMPS_13_HFF) || MB(RAMPS_13_HHF) || MB(RAMPS_13_HHH)
+          ECHO_M("RAMPS");
+        #elif MB(ALLIGATOR)
+          ECHO_M("ALLIGATOR");
+        #elif MB(RADDS) || MB(RAMPS_FD_V1) || MB(RAMPS_FD_V2) || MB(SMART_RAMPS) || MB(RAMPS4DUE)
+          ECHO_M("Arduino due");
+        #elif MB(ULTRATRONICS)
+          ECHO_M("ULTRATRONICS");
+        #else
+          ECHO_M("AVR");
+        #endif
+        ECHO_M("\",\"firmwareName\":\"");
+        ECHO_M(FIRMWARE_NAME);
+        ECHO_M(",\"firmwareVersion\":\"");
+        ECHO_M(SHORT_BUILD_VERSION);
+        ECHO_M("\",\"firmwareDate\":\"");
+        ECHO_M(STRING_DISTRIBUTION_DATE);
+
+        ECHO_M("\",\"minFeedrates\":[0,0,0");
+        for (uint8_t i = 0; i < EXTRUDERS; i++) {
+          ECHO_M(",0");
+        }
+        ECHO_M("],\"maxFeedrates\":[");
+        ECHO_V(planner.max_feedrate[X_AXIS]);
+        ECHO_M(",");
+        ECHO_V(planner.max_feedrate[Y_AXIS]);
+        ECHO_M(",");
+        ECHO_V(planner.max_feedrate[Z_AXIS]);
+        for (uint8_t i = 0; i < EXTRUDERS; i++) {
+          ECHO_M(",");
+          ECHO_V(planner.max_feedrate[E_AXIS + i]);
+        }
+        ECHO_M("]");
+        break;
+    }
+    ECHO_EM("}");*/
+ }
+
+/**
  * M410: Quickstop - Abort all planned moves
  *
  * This will stop the carriages mid-move, so most likely they
@@ -5562,7 +5818,6 @@ void process_next_command() {
       case 206: // M206 additional homing offset
         gcode_M206();
         break;
-
       #ifdef DELTA
         case 665: // M665 set delta configurations L<diagonal_rod> R<delta_radius> S<segments_per_sec>
           gcode_M665();
@@ -5699,7 +5954,10 @@ void process_next_command() {
           gcode_M407();
           break;
       #endif // FILAMENT_SENSOR
-
+      
+      case 408:
+        gcode_M408();
+        break;
       case 410: // M410 quickstop - Abort all the planned moves.
         gcode_M410();
         break;
