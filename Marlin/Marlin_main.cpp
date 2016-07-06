@@ -606,16 +606,16 @@ void servo_init() {
  *  - Print startup messages and diagnostics
  *  - Get EEPROM or default settings
  *  - Initialize managers for:
- *    • temperature
- *    • planner
- *    • watchdog
- *    • stepper
- *    • photo pin
- *    • servos
- *    • LCD controller
- *    • Digipot I2C
- *    • Z probe sled
- *    • status LEDs
+ *    â€¢ temperature
+ *    â€¢ planner
+ *    â€¢ watchdog
+ *    â€¢ stepper
+ *    â€¢ photo pin
+ *    â€¢ servos
+ *    â€¢ LCD controller
+ *    â€¢ Digipot I2C
+ *    â€¢ Z probe sled
+ *    â€¢ status LEDs
  */
 
 
@@ -4061,7 +4061,7 @@ inline void gcode_M204() {
  *
  *    S = Min Feed Rate (mm/s)
  *    T = Min Travel Feed Rate (mm/s)
- *    B = Min Segment Time (µs)
+ *    B = Min Segment Time (Âµs)
  *    X = Max XY Jerk (mm/s/s)
  *    Z = Max Z Jerk (mm/s/s)
  *    E = Max E Jerk (mm/s/s)
@@ -4685,6 +4685,127 @@ inline void gcode_M400() { st_synchronize(); }
   }
 
 #endif // FILAMENT_SENSOR
+
+/**
+ * M408: Report JSON-style response
+ */
+inline void gcode_M408() {
+    // Dades fixes per provar que funciona.
+    //SERIAL_PROTOCOLLN("{\"status\":\"I\",\"heaters\":[25.0,29.0,28.3],\"active\":[-273.1,0.0,0.0],\"standby\":[-273.1,0.0,0.0],\"hstat\":[0,2,1],\"pos\":[-11.00,0.00,0.00],\"extr\":[0.0,0.0],\"sfactor\":100.00, \"efactor\":[100.00,100.00],\"tool\":1,\"probe\":\"535\",\"fanPercent\":[75.0,0.0],\"fanRPM\":0,\"homed\":[0,0,0],\"fraction_printed\":0.572}");
+
+    /*
+    {
+      "status": "I",
+      "homed": [0, 0, 0],
+      "heaters": [25.0, 29.0, 28.3],
+      "active": [-273.1, 0.0, 0.0],  
+      "hstat": [0, 2, 1], 
+      "pos": [-11.00, 0.00, 0.00], 
+      "sfactor": 100.00, 
+      "efactor": [100.00, 100.00], 
+      "tool": 1, //FET FINS AQUI
+      "probe": "535", 
+      "fanPercent": [75.0, 0.0],
+      "fanRPM": 0,
+      "fraction_printed": 0.572
+    }
+    AJUDA: https://github.com/MagoKimbra/MarlinKimbra/blob/39919b30e25498aed90dceee3541fd2d91816218/MK/module/MK_Main.cpp
+    */
+    
+    bool firstOccurrence;
+    uint8_t type = 0;
+
+    if (code_seen('S')) type = code_value_short();
+
+    // "status": "I
+    SERIAL_PROTOCOLPGM("{\"status\":\"");
+    #ifdef SDSUPPORT
+      if (!movesplanned() && !IS_SD_PRINTING) SERIAL_PROTOCOLPGM("I"); // IDLING
+      else if (IS_SD_PRINTING) SERIAL_PROTOCOLPGM("P");                // SD PRINTING
+      else ECHO_M("B");                                                // SOMETHING ELSE, BUT SOMETHIG
+    #else
+      if (!movesplanned()) SERIAL_PROTOCOLPGM("I");   // IDLING
+      else SERIAL_PROTOCOLPGM("B");                   // SOMETHING ELSE, BUT SOMETHIG
+    #endif
+
+    // ","homed":[0, 0, 0]
+    SERIAL_PROTOCOLPGM("\",\"homed\":[");
+    SERIAL_PROTOCOLPGM(axis_known_position[X_AXIS] ? "1," : "0,");
+    SERIAL_PROTOCOLPGM(axis_known_position[Y_AXIS] ? "1," : "0,");
+    SERIAL_PROTOCOLPGM(axis_known_position[Z_AXIS] ? "1]" : "0]");
+    
+    
+    #if HAS_TEMP_0 || HAS_TEMP_BED || defined(HEATER_0_USES_MAX6675)
+      // ,"heaters": [25.0, 29.0, 28.3]
+      SERIAL_PROTOCOLPGM(",\"heaters\": [");
+      firstOccurrence = true;
+      #if HAS_TEMP_BED
+        SERIAL_PROTOCOL_F(degBed(), 1);
+        firstOccurrence = false;
+      #endif
+      for (int8_t e = 0; e < EXTRUDERS; ++e) {
+        if (!firstOccurrence) SERIAL_PROTOCOLPGM(",");
+        SERIAL_PROTOCOL_F(degHotend(e), 1);
+        firstOccurrence = false;
+      }
+      SERIAL_PROTOCOLPGM("]");
+
+      // ,"active":[25.0, 29.0, 28.3]
+      SERIAL_PROTOCOLPGM(",\"active\": [");
+      firstOccurrence = true;
+      #if HAS_TEMP_BED
+         SERIAL_PROTOCOL_F(degTargetBed(), 1);
+        firstOccurrence = false;
+      #endif
+      for (int8_t e = 0; e < EXTRUDERS; ++e) {
+        if (!firstOccurrence) SERIAL_PROTOCOLPGM(",");
+         SERIAL_PROTOCOL_F(degTargetHotend(e), 1);
+        firstOccurrence = false;
+      }
+      SERIAL_PROTOCOLPGM("]");
+
+      // ,"hstat": [1, 2, 1]
+      SERIAL_PROTOCOLPGM(",\"hstat\": [");
+      firstOccurrence = true;
+      #if HAS_TEMP_BED
+        SERIAL_PROTOCOLPGM(degTargetBed() > 0 ? "2" : "1");
+        firstOccurrence = false;
+      #endif
+      for (int8_t e = 0; e < EXTRUDERS; ++e) {
+        if (!firstOccurrence) SERIAL_PROTOCOLPGM(",");
+        SERIAL_PROTOCOLPGM(degTargetHotend(e) > EXTRUDER_AUTO_FAN_TEMPERATURE ? "2" : "1");
+        firstOccurrence = false;
+      }
+      SERIAL_PROTOCOLPGM("]");
+      
+    #endif
+
+    // ,"pos":[-11.00, 0.00, 0.00
+    SERIAL_PROTOCOLPGM(",\"pos\":[");
+    SERIAL_PROTOCOL(current_position[X_AXIS]);
+    SERIAL_PROTOCOLPGM(",");
+    SERIAL_PROTOCOL(current_position[Y_AXIS]);
+    SERIAL_PROTOCOLPGM(",");
+    SERIAL_PROTOCOL(current_position[Z_AXIS]);
+
+    // ],"sfactor":100.00
+    SERIAL_PROTOCOLPGM("],\"sfactor\":");
+    SERIAL_PROTOCOL((float) feedrate_multiplier);
+
+    // ,"efactor": [100.00,100.00
+    SERIAL_PROTOCOLPGM(",\"efactor\":[");
+    firstOccurrence = true;
+    for (uint8_t i = 0; i < EXTRUDERS; i++) {
+      if (!firstOccurrence) SERIAL_PROTOCOLPGM(",");
+      SERIAL_PROTOCOL((float) extruder_multiplier[i]);
+      firstOccurrence = false;
+    }
+
+    // ],"tool":1
+    SERIAL_PROTOCOLPGM("],\"tool\":");
+    SERIAL_PROTOCOL(active_extruder);
+    SERIAL_EOL;
+ }
 
 /**
  * M410: Quickstop - Abort all planned moves
@@ -5563,7 +5684,6 @@ void process_next_command() {
       case 206: // M206 additional homing offset
         gcode_M206();
         break;
-
       #ifdef DELTA
         case 665: // M665 set delta configurations L<diagonal_rod> R<delta_radius> S<segments_per_sec>
           gcode_M665();
@@ -5700,7 +5820,10 @@ void process_next_command() {
           gcode_M407();
           break;
       #endif // FILAMENT_SENSOR
-
+      
+      case 408:
+        gcode_M408();
+        break;
       case 410: // M410 quickstop - Abort all the planned moves.
         gcode_M410();
         break;
@@ -6782,3 +6905,4 @@ void calculate_volumetric_multipliers() {
   for (int i=0; i<EXTRUDERS; i++)
     volumetric_multiplier[i] = calculate_volumetric_multiplier(filament_size[i]);
 }
+
