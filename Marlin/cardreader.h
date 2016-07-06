@@ -16,7 +16,7 @@ public:
   void write_command(char *buf);
   //files auto[0-9].g on the sd card are performed in a row
   //this is to delay autostart and hence the initialisaiton of the sd card to some seconds after the normal init, so the device is available quick after a reset
-
+  float getFractionPrinted();
   void checkautostart(bool x);
   void openFile(char* name,bool read,bool replace_current=true);
   void openLogFile(char* name);

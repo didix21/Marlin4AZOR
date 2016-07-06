@@ -598,4 +598,7 @@ void CardReader::printingHasFinished() {
   }
 }
 
+float CardReader::getFractionPrinted(){
+  return sdpos/filesize*100;
+}
 #endif //SDSUPPORT

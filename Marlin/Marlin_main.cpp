@@ -4721,7 +4721,7 @@ inline void gcode_M408() {
     #ifdef SDSUPPORT
       if (!movesplanned() && !IS_SD_PRINTING) SERIAL_PROTOCOLPGM("I"); // IDLING
       else if (IS_SD_PRINTING) SERIAL_PROTOCOLPGM("P");                // SD PRINTING
-      else ECHO_M("B");                                                // SOMETHING ELSE, BUT SOMETHIG
+      else SERIAL_PROTOCOLPGM("B");                                                // SOMETHING ELSE, BUT SOMETHIG
     #else
       if (!movesplanned()) SERIAL_PROTOCOLPGM("I");   // IDLING
       else SERIAL_PROTOCOLPGM("B");                   // SOMETHING ELSE, BUT SOMETHIG
@@ -4764,7 +4764,7 @@ inline void gcode_M408() {
       SERIAL_PROTOCOLPGM("]");
 
       // ,"hstat": [1, 2, 1]
-      SERIAL_PROTOCOLPGM(",\"hstat\": [");
+      SERIAL_PROTOCOLPGM(",\"hstat\":[");
       firstOccurrence = true;
       #if HAS_TEMP_BED
         SERIAL_PROTOCOLPGM(degTargetBed() > 0 ? "2" : "1");
@@ -4803,6 +4803,23 @@ inline void gcode_M408() {
     // ],"tool":1
     SERIAL_PROTOCOLPGM("],\"tool\":");
     SERIAL_PROTOCOL(active_extruder);
+    
+
+    // ,"probe": "535"
+    SERIAL_PROTOCOLPGM(",\"probe\":\"195\"");
+
+    // ,"fanPercent": [75.0, 0.0],
+    SERIAL_PROTOCOLPGM(",\"fanPercent\":[");
+    SERIAL_PROTOCOL((float)fanSpeed/255*100);
+    SERIAL_PROTOCOLPGM("]");
+    // "fanRPM": 0,
+    
+    //,"fraction": 
+    #ifdef SDSUPPORT
+       SERIAL_PROTOCOLPGM(",\"fraction_printed\":");
+      SERIAL_PROTOCOL_F(card.getFractionPrinted(),1);
+    #endif
+    
     SERIAL_EOL;
  }
 
