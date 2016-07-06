@@ -629,7 +629,7 @@ void setup() {
   #endif
 
   MYSERIAL.begin(BAUDRATE);
-  
+
   
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
@@ -730,13 +730,12 @@ void setup() {
 void loop() {
   // This has to be deleted in newer versions.
   // Delete  
-  
-   
   if(firstTime){
     delay(initialDelayForComunication); // This to ensure comunications!!!!
     MYSERIAL.println("The printer is Ready");
     firstTime = 0;
-    
+
+//    usbSerial.println("The printer is Ready");
   }
   
   
