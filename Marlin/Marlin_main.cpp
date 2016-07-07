@@ -4800,7 +4800,7 @@ inline void gcode_M408() {
     
 
     // ,"probe": "535"
-    SERIAL_PROTOCOLPGM(",\"probe\":\"195\"");
+    //SERIAL_PROTOCOLPGM(",\"probe\":\"195\"");
 
     // ,"fanPercent": [75.0, 0.0],
     SERIAL_PROTOCOLPGM(",\"fanPercent\":[");
@@ -4813,16 +4813,19 @@ inline void gcode_M408() {
       SERIAL_PROTOCOLPGM(",\"fraction_printed\":");
       SERIAL_PROTOCOL_F(card.getFractionPrinted(),1);
     #endif
-    /*if (!type){
+    
+    if (type == 0){
+      SERIAL_PROTOCOLPGM("}");
       SERIAL_EOL;
     }
-    else{*/
-      //,"myName":  the name of the printer
+    else if (type == 1) {
+      //,"myName":  "the name of the printer"
       SERIAL_PROTOCOLPGM(",\"myName\":\"");
       SERIAL_PROTOCOLPGM(CUSTOM_MACHINE_NAME);
       SERIAL_PROTOCOLPGM("\"");
+      
       //,"geometry": one of "cartesian", "delta", "corexy, "corexz" etc.
-      SERIAL_PROTOCOLPGM(",\"geometry\":");
+      SERIAL_PROTOCOLPGM(",\"geometry\":\"");
       #if defined DELTA
         SERIAL_PROTOCOLPGM("delta");
       #elif defined SCARA
@@ -4830,8 +4833,9 @@ inline void gcode_M408() {
       #else
         SERIAL_PROTOCOLPGM("cartesian");
       #endif
+      SERIAL_PROTOCOLPGM("\"}");
       SERIAL_EOL;
-    //}
+   }
 } 
 
 /**
