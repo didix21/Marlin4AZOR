@@ -709,10 +709,7 @@ void setup() {
   #ifdef STAT_LED_BLUE
     pinMode(STAT_LED_BLUE, OUTPUT);
     digitalWrite(STAT_LED_BLUE, LOW); // turn it off
-  #endif  
-
- // Serial.begin(9600);
-  
+  #endif    
 }
 
 /**
@@ -734,8 +731,6 @@ void loop() {
     delay(initialDelayForComunication); // This to ensure comunications!!!!
     MYSERIAL.println("The printer is Ready");
     firstTime = 0;
-
-//    usbSerial.println("The printer is Ready");
   }
   
   
@@ -786,7 +781,6 @@ void gcode_line_error(const char *err, bool doFlush=true) {
   SERIAL_ERROR_START;
   serialprintPGM(err);
   SERIAL_ERRORLN(gcode_LastN);
-  //Serial.println(gcode_N);
   if (doFlush) FlushSerialRequestResend();
   serial_count = 0;
 }

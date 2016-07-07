@@ -575,9 +575,56 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 
 #define HOMING_FEEDRATE {50*60, 50*60, 4*60, 0}  // set the homing speeds (mm/min)
 
-// default settings
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,4000,500}  // default steps per unit for Ultimaker
+//#define CONFIGURE_STEP_RESOLUTION // Define this if you want the define the number of steps with the different mechanics characteristics.
+/* http://prusaprinters.org/calculator/#MotorStuffSPMB #Calculator to compute the diferent parameters */
+#ifdef CONFIGURE_STEP_RESOLUTION
+  //Motor Characteristics
+  #define DEFAULT_NUMBER_STEPS 200 //Nº Steps of the motor
+  
+  // default settings
+  // Resolution of the drivers (Default: DRV8825)
+  #define STEP_RESOLUTION_MODE_X  32  /* "1"(FULL STEP), "4"(1/4), "8"(1/8), "16"(1/16), "32" (MAX RESOLUTION = 1/32) */
+  #define STEP_RESOLUTION_MODE_Y  32
+  #define STEP_RESOLUTION_MODE_Z  32
+  #define STEP_RESOLUTION_MODE_E1 32  
+  #if EXTRUDERS == 2 // if there is more than one extruder
+    #define STEP_RESOLUTION_MODE_E2 32
+  #endif
+  
+  #define IDLER_TEETH_X 20 // Nº of teeth
+  #define IDLER_TEETH_Y 20
+
+  #define BELT_PITCH_X 2 //mm
+  #define BELT_PITCH_Y 2 //mm
+
+  #define PITCH_OF_Z_ROD 1.25 //mm
+
+  // MAKEGEAR EXTRUDER BOX
+  #define EXTRUDER_GEAR_RATIO 13.0
+  #define PITCH_WHEEL_DIAMETER 11.59
+  
+  #define STEPS_PER_REVOLUTION_X (DEFAULT_NUMBER_STEPS * STEP_RESOLUTION_MODE_X)
+  #define STEPS_PER_REVOLUTION_Y (DEFAULT_NUMBER_STEPS * STEP_RESOLUTION_MODE_Y)
+  #define STEPS_PER_REVOLUTION_Z (DEFAULT_NUMBER_STEPS * STEP_RESOLUTION_MODE_Z)
+  #define STEPS_PER_REVOLUTION_E1 (DEFAULT_NUMBER_STEPS * STEP_RESOLUTION_MODE_E1)
+  #if EXTRUDERS == 2 // if there is more than one extruder
+    #define STEPS_PER_REVOLUTION_E2 (DEFAULT_NUMBER_STEPS * STEP_RESOLUTION_MODE_E2)
+  #endif
+
+
+
+  #define AXIS_STEPS_PER_UNIT_X (STEPS_PER_REVOLUTION_X / IDLER_TEETH_X / BELT_PITCH_X)
+  #define AXIS_STEPS_PER_UNIT_Y (STEPS_PER_REVOLUTION_Y / IDLER_TEETH_Y / BELT_PITCH_Y)
+  #define AXIS_STEPS_PER_UNIT_Z (STEPS_PER_REVOLUTION_Z / PITCH_OF_Z_ROD)
+  #define AXIS_STEPS_PER_UNIT_E1 (STEPS_PER_REVOLUTION_E1 * EXTRUDER_GEAR_RATIO / (PINCH_WHEEL_DIAMETER * PI))
+ 
+  #define DEFAULT_AXIS_STEPS_PER_UNIT {AXIS_STEPS_PER_UNIT_X, AXIS_STEPS_PER_UNIT_Y, AXIS_STEPS_PER_UNIT_Z, AXIS_STEPS_PER_UNIT_E1}
+    
+#else
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   {80*2,80*2,4000*2,194.537}  // default steps per unit for Ultimaker
+#endif
+
 #define DEFAULT_MAX_FEEDRATE          {300, 300, 5, 25}    // (mm/sec)
 #define DEFAULT_MAX_ACCELERATION      {3000,3000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for Skeinforge 40+, for older versions raise them a lot.
 // #define ENABLE_HIGH_SPEED_STEPPING  // Activate for very high stepping rates, normally only needed for 1/64 or more micro steps (AXIS_STEPS_PER_UNIT * MAX_FEEDRATE > 150,000)
