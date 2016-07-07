@@ -4715,7 +4715,7 @@ inline void gcode_M408() {
     uint8_t type = 0;
 
     if (code_seen('S')) type = code_value_short();
-
+    
     // "status": "I
     SERIAL_PROTOCOLPGM("{\"status\":\"");
     #ifdef SDSUPPORT
@@ -4816,12 +4816,29 @@ inline void gcode_M408() {
     
     //,"fraction": 
     #ifdef SDSUPPORT
-       SERIAL_PROTOCOLPGM(",\"fraction_printed\":");
+      SERIAL_PROTOCOLPGM(",\"fraction_printed\":");
       SERIAL_PROTOCOL_F(card.getFractionPrinted(),1);
     #endif
-    
-    SERIAL_EOL;
- }
+    /*if (!type){
+      SERIAL_EOL;
+    }
+    else{*/
+      //,"myName":  the name of the printer
+      SERIAL_PROTOCOLPGM(",\"myName\":\"");
+      SERIAL_PROTOCOLPGM(CUSTOM_MACHINE_NAME);
+      SERIAL_PROTOCOLPGM("\"");
+      //,"geometry": one of "cartesian", "delta", "corexy, "corexz" etc.
+      SERIAL_PROTOCOLPGM(",\"geometry\":");
+      #if defined DELTA
+        SERIAL_PROTOCOLPGM("delta");
+      #elif defined SCARA
+        SERIAL_PROTOCOLPGM("scara");
+      #else
+        SERIAL_PROTOCOLPGM("cartesian");
+      #endif
+      SERIAL_EOL;
+    //}
+} 
 
 /**
  * M410: Quickstop - Abort all planned moves
