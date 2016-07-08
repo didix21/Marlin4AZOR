@@ -75,6 +75,7 @@
 #endif
 
 #define FAN_PIN            34 //FAN_0 for AZOR
+#define FAN1_PIN           36 //FAN_1 for AZOR
 
 #define PS_ON_PIN          12 
 

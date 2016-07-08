@@ -731,6 +731,7 @@ void loop() {
     delay(initialDelayForComunication); // This to ensure comunications!!!!
     MYSERIAL.println("The printer is Ready");
     firstTime = 0;
+    analogWrite(FAN1_PIN,255);
   }
   
   
