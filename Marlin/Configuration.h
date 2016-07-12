@@ -66,7 +66,7 @@ Here are some standard links for getting your machine calibrated:
 // Configure serialType as:
 // 0 := Serial Port 0 (Use this if you want to connect to the LCD touch panel)
 // 1 := Native Serial Port (Use this if you want to connect to the PC) 
-#define serialType 1
+#define serialType 0
 
 // This determines the communication speed of the printer
 // :[2400,9600,19200,38400,57600,115200,250000]
@@ -706,7 +706,7 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 
 //#define ULTRA_LCD  //general LCD support, also 16x2
 //#define DOGLCD  // Support for SPI LCD 128x64 (Controller ST7565R graphic Display Family)
-//#define SDSUPPORT // Enable SD Card Support in Hardware Console
+#define SDSUPPORT // Enable SD Card Support in Hardware Console
 //#define SDSLOW // Use slower SD transfer mode (not normally needed - uncomment if you're getting volume init error)
 //#define SD_CHECK_AND_RETRY // Use CRC checks and retries on the SD communication
 //#define ENCODER_PULSES_PER_STEP 1 // Increase if you have a high resolution encoder
