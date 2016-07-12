@@ -4,32 +4,13 @@ This README would normally document whatever steps are necessary to get your app
 
 ### What is this repository for? ###
 
-* Quick summary
+This repository contains all the building board files for AZOR 1.0, right now is a prototype. Thus, it is recommended not use this files. 
+ 
 
-This repository consist in the AZOR 1.0 building board files.
-
-* Version
-
-AZOR 1.0
-
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
-
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
 
 ### Contribution guidelines ###
 
-* Writing tests
-* Code review
-* Other guidelines
 
 ### Who do I talk to? ###
 
-* Repo owner or admin
-* Other community or team contact
+* Admin: For more information, send a message to didaccoll@gmail.com
