@@ -9,7 +9,7 @@ This repository contains all the building board files for AZOR 1.0, right now is
 ### Changes to be done ####
 
 * ADD SPI PORT.
-* Change Motor Wire.
+* Change Motor Wire. ### DONE ###
 * Change clock.
 * Serigraph.
 * Botons. ### DONE ###
