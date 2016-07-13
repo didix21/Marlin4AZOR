@@ -12,12 +12,12 @@ This repository contains all the building board files for AZOR 1.0, right now is
 * Change Motor Wire.
 * Change clock.
 * Serigraph.
-* Botons.
+* Botons. ### DONE ###
 * LEDS (Blue (power)).
 * XMOT/STOP change for STOP/XMOT.
 * Change U11 -> E2, U8 -> E1, U5 -> X, U7 -> Y, U6 -> Z.
 * Serigraph PTS-Panel, change the side where the number one is situated.
-* Fix Track.
+* Fix Track. ###DONE###
 * Change Hottend connector.
 
 
