@@ -19,6 +19,7 @@ This repository contains all the building board files for AZOR 1.0, right now is
 * Serigraph PTS-Panel, change the side where the number one is situated.
 * Fix Track. ###DONE###
 * Change Hottend connector.
+* ADD SOFT SPI SUPPORT PINS.
 
 
 
