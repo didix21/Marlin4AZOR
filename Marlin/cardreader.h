@@ -37,8 +37,8 @@ public:
 
   void getAbsFilename(char *t);
 
-  void ls();
-  void chdir(const char * relpath);
+  void ls(bool currentDir = false);
+  bool chdir(const char * relpath);
   void updir();
   void setroot();
 

@@ -630,7 +630,6 @@ void setup() {
 
   MYSERIAL.begin(BAUDRATE);
 
-  
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
 
@@ -2938,9 +2937,40 @@ inline void gcode_M17() {
    * M20: List SD card to serial output
    */
   inline void gcode_M20() {
-    SERIAL_PROTOCOLLNPGM(MSG_BEGIN_FILE_LIST);
-    card.ls();
-    SERIAL_PROTOCOLLNPGM(MSG_END_FILE_LIST);
+    
+    card.setroot();
+    if (code_seen('P')) {
+      
+      ++current_command_args;
+      if (current_command_args[0] == '/') ++current_command_args;
+      if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r') {
+        String dir = "";
+        for (int i = 0; i < strlen(current_command_args); ++i) {
+          if (current_command_args[i] == '/') {
+            //SERIAL_PROTOCOL(dir.c_str());
+            //SERIAL_PROTOCOL('$');
+            if (!card.chdir(dir.c_str())) return;
+            dir = "";
+          } else {
+            dir += current_command_args[i];
+          }
+        }
+        if (dir.length() > 0) {
+          //SERIAL_PROTOCOL(dir.c_str());
+         // SERIAL_PROTOCOL('$');
+          if (!card.chdir(dir.c_str())) return;
+        }
+      }
+    }
+      
+    SERIAL_PROTOCOL("{\"dir\":\"/");
+    SERIAL_PROTOCOL(current_command_args);
+    SERIAL_PROTOCOL("\",\"files\":[");
+    
+    card.ls(true);
+
+    SERIAL_PROTOCOLLN("]}");
+    
   }
 
   /**
