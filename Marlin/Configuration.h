@@ -410,7 +410,7 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 #define X_MIN_POS 70
 #define Y_MIN_POS 20
 #define Z_MIN_POS 0
-#define X_MAX_POS 370
+#define X_MAX_POS 450
 #define Y_MAX_POS 220
 #define Z_MAX_POS 200
 
@@ -454,7 +454,7 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 
 // @section bedlevel
 
-#define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (remove // at the start of the line)
+//#define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (remove // at the start of the line)
 #define Z_PROBE_REPEATABILITY_TEST  // If not commented out, Z-Probe Repeatability test will be included if Auto Bed Leveling is Enabled.
 
 #ifdef ENABLE_AUTO_BED_LEVELING
@@ -504,7 +504,7 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
   // X and Y offsets must be integers
   #define X_PROBE_OFFSET_FROM_EXTRUDER -5     // Probe on: -left  +right
   #define Y_PROBE_OFFSET_FROM_EXTRUDER -32     // Probe on: -front +behind
-  #define Z_PROBE_OFFSET_FROM_EXTRUDER -5  // -below (always!)
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER 0  // -below (always!)
 
   #define Z_RAISE_BEFORE_HOMING 4       // (in mm) Raise Z before homing (G28) for Probe Clearance.
                                         // Be sure you have this distance over your Z_MAX_POS in case
@@ -625,7 +625,7 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
   #define DEFAULT_AXIS_STEPS_PER_UNIT {AXIS_STEPS_PER_UNIT_X, AXIS_STEPS_PER_UNIT_Y, AXIS_STEPS_PER_UNIT_Z, AXIS_STEPS_PER_UNIT_E1}
     
 #else
-  #define DEFAULT_AXIS_STEPS_PER_UNIT   {80*2,80*2,4000*2,194.537}  // default steps per unit for Ultimaker
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   {80*2,80*2,3199,638125,80*2/*194.537*/}  // default steps per unit for Ultimaker
 #endif
 
 #define DEFAULT_MAX_FEEDRATE          {300, 300, 5, 25}    // (mm/sec)
