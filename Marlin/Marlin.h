@@ -16,6 +16,9 @@
 #include "HAL.h"
 #include "fastio.h"
 #include "Configuration.h"
+#ifdef USBSUPPORT
+  #include <UsbFat.h> //Use a usb PEN
+#endif
 #include "pins.h"
 #include "fsr_sensor.h"
 

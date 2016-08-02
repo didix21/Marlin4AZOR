@@ -716,7 +716,16 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 //#define SPEAKER // The sound device is a speaker - not a buzzer. A buzzer resonates with his own frequency.
 //#define LCD_FEEDBACK_FREQUENCY_DURATION_MS 100 // the duration the buzzer plays the UI feedback sound. ie Screen Click
 //#define LCD_FEEDBACK_FREQUENCY_HZ 1000         // this is the tone frequency the buzzer plays when on UI feedback. ie Screen Click
-                                               // 0 to disable buzzer feedback  
+                                               // 0 to disable buzzer feedback 
+
+//==============================USB support=============================
+// @section lcd                                                
+                                               
+// USB STICK
+// USB Stick support is disable by default. If your controller has an USB slot,
+// you must uncomment the following option or it worn't work.
+//
+#define USBSUPPORT                                               
 
 // Original RADDS Display from Willy
 // http://max3dshop.org/index.php/default/elektronik/radds-lcd-sd-display-with-reset-and-back-buttom.html
