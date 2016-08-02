@@ -22,7 +22,7 @@
 #ifndef STEPPER_INDIRECTION_H
 #define STEPPER_INDIRECTION_H
 
-#include "macros.h"
+#include "macros_marlin.h"
 
 // X motor
 #define X_STEP_INIT SET_OUTPUT(X_STEP_PIN)

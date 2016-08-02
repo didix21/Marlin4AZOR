@@ -2,7 +2,7 @@
 #define THERMISTORTABLES_H_
 
 #include "Marlin.h"
-#include "macros.h"
+#include "macros_marlin.h"
 
 #define OVERSAMPLENR 16
 

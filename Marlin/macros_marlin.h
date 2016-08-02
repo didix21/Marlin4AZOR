@@ -1,5 +1,5 @@
-#ifndef MACROS_H
-#define MACROS_H
+#ifndef MACROS_MARLIN_H
+#define MACROS_MARLIN_H
 
 // Macros for bit masks
 #define BIT(b) (1<<(b))
@@ -24,4 +24,4 @@
 
 #define COUNT(a) (sizeof(a)/sizeof(*a))
 
-#endif //__MACROS_H
+#endif //__MACROS_MARLIN_H
