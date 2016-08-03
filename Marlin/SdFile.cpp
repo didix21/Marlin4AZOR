@@ -20,6 +20,7 @@
 #include "Marlin.h"
 
 #ifdef SDSUPPORT
+#ifndef USBSUPPORT
 #include "SdFile.h"
 /**  Create a file object and open it in the current working directory.
  *
@@ -91,5 +92,5 @@ void SdFile::writeln_P(PGM_P str) {
   write_P(PSTR("\r\n"));
 }
 
-
+#endif // USBSUPPORT
 #endif

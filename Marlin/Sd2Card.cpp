@@ -20,6 +20,7 @@
 #include "Marlin.h"
 
 #ifdef SDSUPPORT
+#ifndef USBSUPPORT
 #include "Sd2Card.h"
 //------------------------------------------------------------------------------
 
@@ -638,4 +639,5 @@ bool Sd2Card::writeStop() {
   return false;
 }
 
+#endif
 #endif

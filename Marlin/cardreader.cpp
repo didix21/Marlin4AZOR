@@ -6,6 +6,7 @@
 #include "language.h"
 
 #ifdef SDSUPPORT
+#ifndef USBSUPPORT
 
 CardReader::CardReader() {
   filesize = 0;
@@ -584,4 +585,6 @@ void CardReader::printingHasFinished() {
 float CardReader::getFractionPrinted(){
   return sdpos/filesize*100;
 }
+
+#endif // USBSUPPORT
 #endif //SDSUPPORT
