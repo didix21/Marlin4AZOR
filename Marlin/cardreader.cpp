@@ -60,18 +60,20 @@ void CardReader::lsDive(const char *prepend, SdFile parent, const char * const m
       if (!firstFile) SERIAL_PROTOCOL(',');
       SERIAL_PROTOCOL('"');
       if (DIR_IS_SUBDIR(&p)) SERIAL_PROTOCOL('*');
+      char lfilename[FILENAME_LENGTH];
+      createFilename(lfilename, p);
+      SERIAL_PROTOCOL(lfilename);
+      SERIAL_PROTOCOL('|');
+      
       if (strlen(longFilename) > 0) {
         SERIAL_PROTOCOL(longFilename);
       } else {
-        char lfilename[FILENAME_LENGTH];
-        createFilename(lfilename, p);
         SERIAL_PROTOCOL(lfilename);
       }
       SERIAL_PROTOCOL('"');
       firstFile = false;
       // close() is done automatically by destructor of SdFile
-    }
-    else {
+    } else {
       char pn0 = p.name[0];
       if (pn0 == DIR_NAME_FREE) break;
       if (pn0 == DIR_NAME_DELETED || pn0 == '.') continue;
@@ -96,7 +98,6 @@ void CardReader::lsDive(const char *prepend, SdFile parent, const char * const m
           cnt++;
           break;
       }
-
     }
   } // while readDir
 }
@@ -145,7 +146,7 @@ void CardReader::ls(bool currentDir /*=false*/)  {
 
       // Print /LongNamePart to serial output
       SERIAL_PROTOCOLCHAR('/');
-      SERIAL_PROTOCOL(longFilename[0] ? longFilename : "???");
+      SERIAL_PROTOCOL(longFilename[0] ? longFilename : path);
 
       // If the filename was printed then that's it
       if (!filenameIsDir) break;
@@ -167,7 +168,7 @@ void CardReader::ls(bool currentDir /*=false*/)  {
 
     } // while i<pathLen
 
-    SERIAL_EOL;
+    //SERIAL_EOL;
   }
 
 #endif // LONG_FILENAME_HOST_SUPPORT

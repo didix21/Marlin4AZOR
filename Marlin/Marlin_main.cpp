@@ -2821,10 +2821,44 @@ inline void gcode_G28() {
     #endif
   }
 
-  #ifndef Z_PROBE_SLED
+  //#ifndef Z_PROBE_SLED
 
     inline void gcode_G30() {
-      deploy_z_probe(); // Engage Z Servo endstop if available
+       SERIAL_PROTOCOLPGM("OKOK");
+       double X_current = st_get_position_mm(X_AXIS),
+           Y_current = st_get_position_mm(Y_AXIS),
+           Z_current = st_get_position_mm(Z_AXIS),
+           X_probe_location = X_current, Y_probe_location = Y_current,
+           Z_start_location = Z_current + Z_RAISE_BEFORE_PROBING;
+           
+      if (code_seen('X')) {
+        X_probe_location = code_value() - X_PROBE_OFFSET_FROM_EXTRUDER;
+        if (X_probe_location < X_MIN_POS || X_probe_location > X_MAX_POS) {
+          out_of_range_error(PSTR("X"));
+          return;
+        }
+      }
+  
+      if (code_seen('Y')) {
+        Y_probe_location = code_value() -  Y_PROBE_OFFSET_FROM_EXTRUDER;
+        if (Y_probe_location < Y_MIN_POS || Y_probe_location > Y_MAX_POS) {
+          out_of_range_error(PSTR("Y"));
+          return;
+        }
+      }
+  
+      float measured_z = probe_pt(X_probe_location, Y_probe_location, Z_start_location, ProbeDeployAndStow, 3);
+      SERIAL_PROTOCOLPGM("Bed X: ");
+      SERIAL_PROTOCOL(current_position[X_AXIS] + 0.0001);
+      SERIAL_PROTOCOLPGM(" Y: ");
+      SERIAL_PROTOCOL(current_position[Y_AXIS] + 0.0001);
+      SERIAL_PROTOCOLPGM(" Z: ");
+      SERIAL_PROTOCOL(current_position[Z_AXIS] + 0.0001);
+      SERIAL_PROTOCOLPGM(" measured Z: ");
+      SERIAL_PROTOCOL(measured_z);
+      SERIAL_EOL;
+      
+      /*deploy_z_probe(); // Engage Z Servo endstop if available
       st_synchronize();
       // TODO: make sure the bed_level_rotation_matrix is identity or the planner will get set incorectly
       setup_for_endstop_move();
@@ -2842,9 +2876,10 @@ inline void gcode_G28() {
 
       clean_up_after_endstop_move();
       stow_z_probe(); // Retract Z Servo endstop if available
+      */
     }
 
-  #endif //!Z_PROBE_SLED
+  //#endif //!Z_PROBE_SLED
 
 #endif //ENABLE_AUTO_BED_LEVELING
 
@@ -2947,8 +2982,6 @@ inline void gcode_M17() {
         String dir = "";
         for (int i = 0; i < strlen(current_command_args); ++i) {
           if (current_command_args[i] == '/') {
-            //SERIAL_PROTOCOL(dir.c_str());
-            //SERIAL_PROTOCOL('$');
             if (!card.chdir(dir.c_str())) return;
             dir = "";
           } else {
@@ -2956,21 +2989,18 @@ inline void gcode_M17() {
           }
         }
         if (dir.length() > 0) {
-          //SERIAL_PROTOCOL(dir.c_str());
-         // SERIAL_PROTOCOL('$');
           if (!card.chdir(dir.c_str())) return;
         }
       }
     }
-      
+    
     SERIAL_PROTOCOL("{\"dir\":\"/");
     SERIAL_PROTOCOL(current_command_args);
+    SERIAL_PROTOCOL("\",\"longdir\":\"");
+    card.printLongPath(current_command_args);
     SERIAL_PROTOCOL("\",\"files\":[");
-    
     card.ls(true);
-
-    SERIAL_PROTOCOLLN("]}");
-    
+    SERIAL_PROTOCOLLN("]}**");
   }
 
   /**
