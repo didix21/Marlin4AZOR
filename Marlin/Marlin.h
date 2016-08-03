@@ -17,7 +17,9 @@
 #include "fastio.h"
 #include "Configuration.h"
 #ifdef USBSUPPORT
-  #include <UsbFat.h> //Use a usb PEN
+  #include <SPI.h>
+  #include <UsbFat.h> //Use a USB Memory Stick
+  #include <masstorage.h>
 #endif
 #include "pins.h"
 #include "fsr_sensor.h"
