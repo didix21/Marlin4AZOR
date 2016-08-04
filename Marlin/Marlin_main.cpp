@@ -631,7 +631,8 @@ void setup() {
   #endif
 
   MYSERIAL.begin(BAUDRATE);
-
+  while(!MYSERIAL);
+  MYSERIAL.println("The Printer is Ready"); 
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
 
@@ -723,41 +724,11 @@ void setup() {
  *  - Call endstop manager
  *  - Call LCD update
  */
- int firstTime = 1;
- int initialDelayForComunication = 5000;
-  #define textBuf 500
-  #define nameBuf 35
-  //Create USB host object
-  USB usb;
-  BulkOnly bulk(&usb);
-  
-  //File system
-  UsbFat key(&bulk);
-
-//Test file
-File file;
-
-char text[textBuf];
-char fileName[nameBuf];
-int readStatus = 0;
-int to=0, tf=0;
 
 void loop() {
   // This has to be deleted in newer versions.
   // Delete  
 
-  if(firstTime){
-    delay(initialDelayForComunication); // This to ensure comunications!!!!
-    MYSERIAL.println("The printer is Ready");
-    firstTime = 0;
-    analogWrite(FAN1_PIN,245);
-    analogWrite(FAN_PIN,245);
-
-    MYSERIAL.println("Begin Program");
-    MYSERIAL.print(F("FreeRAM: "));
-    MYSERIAL.println(FreeRam());
-  }
-  
   
   // Delete until here
   if (commands_in_queue < BUFSIZE - 1) get_command();
