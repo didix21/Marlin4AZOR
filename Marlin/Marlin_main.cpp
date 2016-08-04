@@ -629,9 +629,8 @@ void setup() {
   #endif
 
   MYSERIAL.begin(BAUDRATE);
-  
   while(!MYSERIAL);
-  MYSERIAL.println("The Printer is Ready");
+  
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
 
@@ -724,9 +723,8 @@ void setup() {
  *  - Call LCD update
  */
 
-void loop() {
 
-  
+void loop() {
 
   if (commands_in_queue < BUFSIZE - 1) get_command();
   
