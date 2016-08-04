@@ -89,7 +89,7 @@
  * G11 - retract recover filament according to settings of M208
  * G28 - Home one or more axes
  * G29 - Detailed Z-Probe, probes the bed at 3 or more points.  Will fail if you haven't homed yet.
- * G30 - Single Z Probe, probes bed at current XY location.
+ * G30 - Single Z Probe, probes bed at given XY location.
  * G31 - Dock sled (Z_PROBE_SLED only)
  * G32 - Undock sled (Z_PROBE_SLED only)
  * G90 - Use Absolute Coordinates
@@ -2824,8 +2824,70 @@ inline void gcode_G28() {
   //#ifndef Z_PROBE_SLED
 
     inline void gcode_G30() {
-       SERIAL_PROTOCOLPGM("OKOK");
-       double X_current = st_get_position_mm(X_AXIS),
+      
+      double X_current = st_get_position_mm(X_AXIS),
+             Y_current = st_get_position_mm(Y_AXIS),
+             Z_current = st_get_position_mm(Z_AXIS),
+             E_current = st_get_position_mm(E_AXIS),
+             X_probe_location = X_current, Y_probe_location = Y_current,
+             Z_start_location = Z_current + Z_RAISE_BEFORE_PROBING;
+  
+      if (code_seen('X')) {
+        X_probe_location = code_value() - X_PROBE_OFFSET_FROM_EXTRUDER;
+        if (X_probe_location < X_MIN_POS || X_probe_location > X_MAX_POS) {
+          out_of_range_error(PSTR("X"));
+          return;
+        }
+      }
+  
+      if (code_seen('Y')) {
+        Y_probe_location = code_value() -  Y_PROBE_OFFSET_FROM_EXTRUDER;
+        if (Y_probe_location < Y_MIN_POS || Y_probe_location > Y_MAX_POS) {
+          out_of_range_error(PSTR("Y"));
+          return;
+        }
+      }
+  
+      //
+      // Do all the preliminary setup work.   First raise the probe.
+      //
+  
+      st_synchronize();
+      plan_bed_level_matrix.set_to_identity();
+      plan_buffer_line(X_current, Y_current, Z_start_location, E_current, homing_feedrate[Z_AXIS] / 60, active_extruder);
+      st_synchronize();
+  
+      //
+      // Now get everything to the specified probe point So we can safely do a probe to
+      // get us close to the bed.  If the Z-Axis is far from the bed, we don't want to 
+      // use that as a starting point for each probe.
+      //
+      plan_buffer_line( X_probe_location, Y_probe_location, Z_start_location,
+          E_current,
+          homing_feedrate[X_AXIS]/60,
+          active_extruder);
+      st_synchronize();
+  
+      current_position[X_AXIS] = X_current = st_get_position_mm(X_AXIS);
+      current_position[Y_AXIS] = Y_current = st_get_position_mm(Y_AXIS);
+      current_position[Z_AXIS] = Z_current = st_get_position_mm(Z_AXIS);
+      current_position[E_AXIS] = E_current = st_get_position_mm(E_AXIS);
+
+      setup_for_endstop_move();
+      run_z_probe();
+
+      float measured_z = current_position[Z_AXIS];
+
+      clean_up_after_endstop_move();
+  
+      SERIAL_PROTOCOLPGM("{\"probe\":");
+      SERIAL_PROTOCOL_F(measured_z, 6);
+      SERIAL_PROTOCOLLN("}");
+  }
+
+  /*
+
+      double X_current = st_get_position_mm(X_AXIS),
            Y_current = st_get_position_mm(Y_AXIS),
            Z_current = st_get_position_mm(Z_AXIS),
            X_probe_location = X_current, Y_probe_location = Y_current,
@@ -2847,18 +2909,9 @@ inline void gcode_G28() {
         }
       }
   
-      float measured_z = probe_pt(X_probe_location, Y_probe_location, Z_start_location, ProbeDeployAndStow, 3);
-      SERIAL_PROTOCOLPGM("Bed X: ");
-      SERIAL_PROTOCOL(current_position[X_AXIS] + 0.0001);
-      SERIAL_PROTOCOLPGM(" Y: ");
-      SERIAL_PROTOCOL(current_position[Y_AXIS] + 0.0001);
-      SERIAL_PROTOCOLPGM(" Z: ");
-      SERIAL_PROTOCOL(current_position[Z_AXIS] + 0.0001);
-      SERIAL_PROTOCOLPGM(" measured Z: ");
-      SERIAL_PROTOCOL(measured_z);
-      SERIAL_EOL;
+
       
-      /*deploy_z_probe(); // Engage Z Servo endstop if available
+      deploy_z_probe(); // Engage Z Servo endstop if available
       st_synchronize();
       // TODO: make sure the bed_level_rotation_matrix is identity or the planner will get set incorectly
       setup_for_endstop_move();
@@ -2877,7 +2930,7 @@ inline void gcode_G28() {
       clean_up_after_endstop_move();
       stow_z_probe(); // Retract Z Servo endstop if available
       */
-    }
+    //}
 
   //#endif //!Z_PROBE_SLED
 
