@@ -601,6 +601,44 @@ void servo_init() {
   void enableStepperDrivers() { pinMode(STEPPER_RESET_PIN, INPUT); }  // set to input, which allows it to be pulled high by pullups
 #endif
 
+#ifdef USBSUPPORT
+ //Create USB host object
+ USB usbStick;
+ 
+ BulkOnly bulk(&usbStick);
+
+ //File system
+ UsbFat key(&bulk);
+
+ // Create a object File
+ File file;
+
+ /* Variables */
+ uint8_t usbState;
+ uint8_t usbLastSate;
+
+ 
+ 
+ //Function to know the status of USB
+ bool isSomeDeviceConnected (USB *usbDevice) {
+  static bool deviceConnected = false;
+  usbState = usbDevice->getUsbTaskState();
+  if(usbState != usbLastSate){
+    usbLastSate = usbState;
+    switch(usbState){
+      case(USB_DETACHED_SUBSTATE_WAIT_FOR_DEVICE):
+        deviceConnected = false;
+      break;
+      case(USB_STATE_RUNNING):
+        deviceConnected = true;
+      break;
+    }
+    
+  }
+  return deviceConnected;
+ }
+#endif
+
 /**
  * Marlin entry-point: Set up before the program loop
  *  - Set up the kill pin, filament runout, power hold
@@ -620,7 +658,7 @@ void servo_init() {
  *    â€¢ status LEDs
  */
 
-
+bool connectToSomething;
 void setup() {
   setup_killpin();
   setup_filrunoutpin();
@@ -629,7 +667,7 @@ void setup() {
   #if HAS_STEPPER_RESET
     disableStepperDrivers();
   #endif
-
+//  connectToSomething = isSomeDeviceConnected(&usbStick);
   MYSERIAL.begin(BAUDRATE);
   while(!MYSERIAL);
   MYSERIAL.println("The Printer is Ready"); 
@@ -728,7 +766,12 @@ void setup() {
 void loop() {
   // This has to be deleted in newer versions.
   // Delete  
-
+  if(isSomeDeviceConnected(&usbStick)){
+    MYSERIAL.println("An USB Stick Has been connected");
+  }
+  else{
+    MYSERIAL.println("Waiting For Device");
+  }
   
   // Delete until here
   if (commands_in_queue < BUFSIZE - 1) get_command();
