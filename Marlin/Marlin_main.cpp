@@ -3003,8 +3003,20 @@ inline void gcode_M17() {
    * M21: Init SD Card
    */
   inline void gcode_M21() {
+    // Init SD Card
     #ifdef SDSUPPORT
       card.initsd();
+    #endif
+
+    //Init USB Stick
+    #ifdef USBSUPPORT
+      if(!initUSB(&usbStick)){
+        SERIAL_ECHOLNPGM(MSG_USB_INIT_FAIL);
+      }
+      else {
+       if(!key.begin()) SERIAL_ECHOLNPGM(MSG_USB_VOL_INIT_FAIL);
+       else             SERIAL_ECHOLNPGM(MSG_USB_STICK_OK);
+      }
     #endif
   }
 
@@ -3097,7 +3109,7 @@ inline void gcode_M17() {
  * M31: Get the time since the start of SD Print (or last M109)
  */
 inline void gcode_M31() {
-  if SDSUPPORT
+ #ifdef SDSUPPORT
     print_job_stop_ms = millis();
     millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
     int min = t / 60, sec = t % 60;
