@@ -459,7 +459,7 @@ class SdBaseFile {
    * \param[in] vol The FAT volume containing the root directory to be opened.
    * \return true for success or false for failure.
    */
-  bool openRoot(SdVolume& vol) {return openRoot(&vol);}  // NOLINT
+  bool openRoot(SdVolume& vol) {return open (&vol);}  // NOLINT
   /** \deprecated Use: int8_t readDir(dir_t* dir);
    * \param[out] dir The dir_t struct that will receive the data.
    * \return bytes read for success zero for eof or -1 for failure.

@@ -761,13 +761,14 @@ void setup() {
 void loop() {
   // This has to be deleted in newer versions.
   // Delete  
-  if(isSomeDeviceConnected(&usbStick)){
-    MYSERIAL.println("An USB Stick Has been connected");
-  }
-  else{
-    MYSERIAL.println("Waiting For Device");
-  }
-  
+//  #ifdef USBSUPPORT
+//    if(isSomeDeviceConnected(&usbStick)){
+//      MYSERIAL.println("An USB Stick Has been connected");
+//    }
+//    else{
+//      MYSERIAL.println("Waiting For Device");
+//    }
+//  #endif
   // Delete until here
   if (commands_in_queue < BUFSIZE - 1) get_command();
   
@@ -4757,7 +4758,10 @@ inline void gcode_M408() {
       "probe": "535", 
       "fanPercent": [75.0, 0.0],
       "fanRPM": 0,
-      "fraction_printed": 0.572
+      "fraction_printed": 0.572,
+      "sd_state": 0,
+      "usb_state": 0,
+    
     }
     AJUDA: https://github.com/MagoKimbra/MarlinKimbra/blob/39919b30e25498aed90dceee3541fd2d91816218/MK/module/MK_Main.cpp
     */
@@ -4863,12 +4867,23 @@ inline void gcode_M408() {
     SERIAL_PROTOCOLPGM(",\"fanPercent\":[");
     SERIAL_PROTOCOL((float)fanSpeed/255*100);
     SERIAL_PROTOCOLPGM("]");
-    // "fanRPM": 0,
+   
+    // "fanRPM": 0
     
-    //,"fraction": 
+    
     #ifdef SDSUPPORT
+    //,"fraction_printed": 0
       SERIAL_PROTOCOLPGM(",\"fraction_printed\":");
       SERIAL_PROTOCOL_F(card.getFractionPrinted(),1);
+
+    //,"sd_state:0"
+      SERIAL_PROTOCOLPGM(",\"sd_state\":");
+      SERIAL_PROTOCOLPGM(card.cardOK); /* Change it */
+    #endif
+
+    #ifdef USBSUPPORT
+      SERIAL_PROTOCOLPGM(",\"usb_state\":");
+      SERIAL_PROTOCOL(isSomeDeviceConnected(&usbStick));
     #endif
     
     if (type == 0){

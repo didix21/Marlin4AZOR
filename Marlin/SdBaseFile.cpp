@@ -318,7 +318,7 @@ void SdBaseFile::ls(uint8_t flags, uint8_t indent) {
   rewind();
   int8_t status;
   while ((status = lsPrintNext( flags, indent))) {
-    if (status > 1 && (flags & LS_R)) {
+    if (status > 1 && (flags & sdStick::LS_R)) {
       uint16_t index = curPosition()/32 - 1;
       SdBaseFile s;
       if (s.open(this, index, O_READ)) s.ls( flags, indent + 2);
@@ -358,18 +358,18 @@ int8_t SdBaseFile::lsPrintNext( uint8_t flags, uint8_t indent) {
     MYSERIAL.write('/');
     w++;
   }
-  if (flags & (LS_DATE | LS_SIZE)) {
+  if (flags & (sdStick::LS_DATE | sdStick::LS_SIZE)) {
     while (w++ < 14) MYSERIAL.write(' ');
   }
   // print modify date/time if requested
-  if (flags & LS_DATE) {
+  if (flags & sdStick::LS_DATE) {
     MYSERIAL.write(' ');
     printFatDate( dir.lastWriteDate);
     MYSERIAL.write(' ');
     printFatTime( dir.lastWriteTime);
   }
   // print size if requested
-  if (!DIR_IS_SUBDIR(&dir) && (flags & LS_SIZE)) {
+  if (!DIR_IS_SUBDIR(&dir) && (flags & sdStick::LS_SIZE)) {
     MYSERIAL.write(' ');
     MYSERIAL.print(dir.fileSize);
   }
