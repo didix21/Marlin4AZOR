@@ -2961,44 +2961,41 @@ inline void gcode_M17() {
   enable_all_steppers();
 }
 
-#ifdef SDSUPPORT
+
   /**
    * M20: List SD card to serial output
    */
   inline void gcode_M20() {
-    
-    card.setroot();
-    if (code_seen('P')) {
-      
-      ++current_command_args;
-      if (current_command_args[0] == '/') ++current_command_args;
-      if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r') {
-        String dir = "";
-        for (int i = 0; i < strlen(current_command_args); ++i) {
-          if (current_command_args[i] == '/') {
-            //SERIAL_PROTOCOL(dir.c_str());
-            //SERIAL_PROTOCOL('$');
+    #ifdef SDSUPPORT
+      card.setroot();
+      if (code_seen('P')) {
+        
+        ++current_command_args;
+        if (current_command_args[0] == '/') ++current_command_args;
+        if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r') {
+          String dir = "";
+          for (int i = 0; i < strlen(current_command_args); ++i) {
+            if (current_command_args[i] == '/') {
+              if (!card.chdir(dir.c_str())) return;
+              dir = "";
+            } else {
+              dir += current_command_args[i];
+            }
+          }
+          if (dir.length() > 0) {
             if (!card.chdir(dir.c_str())) return;
-            dir = "";
-          } else {
-            dir += current_command_args[i];
           }
         }
-        if (dir.length() > 0) {
-          //SERIAL_PROTOCOL(dir.c_str());
-         // SERIAL_PROTOCOL('$');
-          if (!card.chdir(dir.c_str())) return;
-        }
       }
-    }
+      // List Current Folder in SD (Mofdified by Joan)
+      SERIAL_PROTOCOL("{\"dir\":\"/");
+      SERIAL_PROTOCOL(current_command_args);
+      SERIAL_PROTOCOL("\",\"files\":[");
       
-    SERIAL_PROTOCOL("{\"dir\":\"/");
-    SERIAL_PROTOCOL(current_command_args);
-    SERIAL_PROTOCOL("\",\"files\":[");
-    
-    card.ls(true);
-
-    SERIAL_PROTOCOLLN("]}");
+      card.ls(true);
+  
+      SERIAL_PROTOCOLLN("]}");
+    #endif //SDSUPPORT
     
   }
 
@@ -3006,58 +3003,73 @@ inline void gcode_M17() {
    * M21: Init SD Card
    */
   inline void gcode_M21() {
-    card.initsd();
+    #ifdef SDSUPPORT
+      card.initsd();
+    #endif
   }
 
   /**
    * M22: Release SD Card
    */
   inline void gcode_M22() {
-    card.release();
+    #ifdef SDSUPPORT
+      card.release();
+    #endif
   }
 
   /**
    * M23: Select a file
    */
   inline void gcode_M23() {
-    card.openFile(current_command_args, true);
+    #ifdef SDSUPPORT
+      card.openFile(current_command_args, true);
+    #endif
   }
 
   /**
    * M24: Start SD Print
    */
   inline void gcode_M24() {
-    card.startFileprint();
-    print_job_start_ms = millis();
+     #ifdef SDSUPPORT
+        card.startFileprint();
+        print_job_start_ms = millis();
+     #endif
   }
 
   /**
    * M25: Pause SD Print
    */
   inline void gcode_M25() {
-    card.pauseSDPrint();
+    #ifdef SDSUPPORT
+      card.pauseSDPrint();
+    #endif
   }
 
   /**
    * M26: Set SD Card file index
    */
   inline void gcode_M26() {
-    if (card.cardOK && code_seen('S'))
-      card.setIndex(code_value_short());
+    #ifdef SDSUPPORT
+      if (card.cardOK && code_seen('S')) card.setIndex(code_value_short());
+    #endif
   }
 
   /**
    * M27: Get SD Card status
    */
   inline void gcode_M27() {
-    card.getStatus();
+    #ifdef SDSUPPORT
+      card.getStatus();
+    #endif
   }
 
   /**
    * M28: Start SD Write
    */
   inline void gcode_M28() {
-    card.openFile(current_command_args, false);
+    #ifdef SDSUPPORT
+      card.openFile(current_command_args, false);
+    #endif
   }
 
   /**
@@ -3072,58 +3084,68 @@ inline void gcode_M17() {
    * M30 <filename>: Delete SD Card file
    */
   inline void gcode_M30() {
-    if (card.cardOK) {
-      card.closefile();
-      card.removeFile(current_command_args);
-    }
+    #ifdef SDSUPPORT
+      if (card.cardOK) {
+        card.closefile();
+        card.removeFile(current_command_args);
+      }
+    #endif
   }
-#endif //SDSUPPORT
+
 
 /**
  * M31: Get the time since the start of SD Print (or last M109)
  */
 inline void gcode_M31() {
-  print_job_stop_ms = millis();
-  millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
-  int min = t / 60, sec = t % 60;
-  char time[30];
-  sprintf_P(time, PSTR("%i min, %i sec"), min, sec);
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLN(time);
-  lcd_setstatus(time);
-  autotempShutdown();
+  if SDSUPPORT
+    print_job_stop_ms = millis();
+    millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
+    int min = t / 60, sec = t % 60;
+    char time[30];
+    sprintf_P(time, PSTR("%i min, %i sec"), min, sec);
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLN(time);
+    lcd_setstatus(time);
+    autotempShutdown();
+  #endif
 }
 
-#ifdef SDSUPPORT
+
   /**
    * M32: Select file and start SD Print
    */
   inline void gcode_M32() {
-    if (card.sdprinting)
-      st_synchronize();
+    #ifdef SDSUPPORT
+        if (card.sdprinting)
+          st_synchronize();
 
-    char* namestartpos = strchr(current_command_args, '!');  // Find ! to indicate filename string start.
-    if (!namestartpos)
-      namestartpos = current_command_args; // Default name position, 4 letters after the M
-    else
-      namestartpos++; //to skip the '!'
+        char* namestartpos = strchr(current_command_args, '!');  // Find ! to indicate filename string start.
+        if (!namestartpos)
+          namestartpos = current_command_args; // Default name position, 4 letters after the M
+        else
+          namestartpos++; //to skip the '!'
+    
+        bool call_procedure = code_seen('P') && (seen_pointer < namestartpos);
+    
+        if (card.cardOK) {
+          card.openFile(namestartpos, true, !call_procedure);
+    
+          if (code_seen('S') && seen_pointer < namestartpos) // "S" (must occur _before_ the filename!)
+            card.setIndex(code_value_short());
+    
+          card.startFileprint();
+          if (!call_procedure)
+            print_job_start_ms = millis(); //procedure calls count as normal print time.
+        }
+     #endif
+     
+     #ifdef USBSUPPORT
 
-    bool call_procedure = code_seen('P') && (seen_pointer < namestartpos);
-
-    if (card.cardOK) {
-      card.openFile(namestartpos, true, !call_procedure);
-
-      if (code_seen('S') && seen_pointer < namestartpos) // "S" (must occur _before_ the filename!)
-        card.setIndex(code_value_short());
-
-      card.startFileprint();
-      if (!call_procedure)
-        print_job_start_ms = millis(); //procedure calls count as normal print time.
-    }
+     #endif
   }
-
+  
+#ifdef SDSUPPORT
   #ifdef LONG_FILENAME_HOST_SUPPORT
-
     /**
      * M33: Get the long full path of a file or folder
      *
