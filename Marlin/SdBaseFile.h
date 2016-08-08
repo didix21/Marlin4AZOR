@@ -36,57 +36,60 @@
  * \brief internal type for istream
  * do not use in user apps
  */
-struct FatPos_t {
-  /** stream position */
-  uint32_t position;
-  /** cluster for position */
-  uint32_t cluster;
-  FatPos_t() : position(0), cluster(0) {}
-};
-
-// use the gnu style oflag in open()
-/** open() oflag for reading */
-uint8_t const O_READ = 0X01;
-/** open() oflag - same as O_IN */
-uint8_t const O_RDONLY = O_READ;
-/** open() oflag for write */
-uint8_t const O_WRITE = 0X02;
-/** open() oflag - same as O_WRITE */
-uint8_t const O_WRONLY = O_WRITE;
-/** open() oflag for reading and writing */
-uint8_t const O_RDWR = (O_READ | O_WRITE);
-/** open() oflag mask for access modes */
-uint8_t const O_ACCMODE = (O_READ | O_WRITE);
-/** The file offset shall be set to the end of the file prior to each write. */
-uint8_t const O_APPEND = 0X04;
-/** synchronous writes - call sync() after each write */
-uint8_t const O_SYNC = 0X08;
-/** truncate the file to zero length */
-uint8_t const O_TRUNC = 0X10;
-/** set the initial position at the end of the file */
-uint8_t const O_AT_END = 0X20;
-/** create the file if nonexistent */
-uint8_t const O_CREAT = 0X40;
-/** If O_CREAT and O_EXCL are set, open() shall fail if the file exists */
-uint8_t const O_EXCL = 0X80;
-
+#ifndef USBSUPPORT
+    struct FatPos_t {
+      /** stream position */
+    uint32_t position;
+      /** cluster for position */
+    uint32_t cluster;
+    FatPos_t() : position(0), cluster(0) {}
+   };
+  
+  // use the gnu style oflag in open()
+  /** open() oflag for reading */
+  uint8_t const O_READ = 0X01;
+  /** open() oflag - same as O_IN */
+  uint8_t const O_RDONLY = O_READ;
+  /** open() oflag for write */
+  uint8_t const O_WRITE = 0X02;
+  /** open() oflag - same as O_WRITE */
+  uint8_t const O_WRONLY = O_WRITE;
+  /** open() oflag for reading and writing */
+  uint8_t const O_RDWR = (O_READ | O_WRITE);
+  /** open() oflag mask for access modes */
+  uint8_t const O_ACCMODE = (O_READ | O_WRITE);
+  /** The file offset shall be set to the end of the file prior to each write. */
+  uint8_t const O_APPEND = 0X04;
+  /** synchronous writes - call sync() after each write */
+  uint8_t const O_SYNC = 0X08;
+  /** truncate the file to zero length */
+  uint8_t const O_TRUNC = 0X10;
+  /** set the initial position at the end of the file */
+  uint8_t const O_AT_END = 0X20;
+  /** create the file if nonexistent */
+  uint8_t const O_CREAT = 0X40;
+  /** If O_CREAT and O_EXCL are set, open() shall fail if the file exists */
+  uint8_t const O_EXCL = 0X80;
+#endif USBSUPPORT
 // SdBaseFile class static and const definitions
 // flags for ls()
-/** ls() flag to print modify date */
-uint8_t const LS_DATE = 1;
-/** ls() flag to print file size */
-uint8_t const LS_SIZE = 2;
-/** ls() flag for recursive list of subdirectories */
-uint8_t const LS_R = 4;
-
-
-// flags for timestamp
-/** set the file's last access date */
-uint8_t const T_ACCESS = 1;
-/** set the file's creation date and time */
-uint8_t const T_CREATE = 2;
-/** Set the file's write date and time */
-uint8_t const T_WRITE = 4;
+namespace sdStick {
+  /** ls() flag to print modify date */
+  uint8_t const LS_DATE = 1;
+  /** ls() flag to print file size */
+  uint8_t const LS_SIZE = 2;
+  /** ls() flag for recursive list of subdirectories */
+  uint8_t const LS_R = 4;
+}
+#ifndef USBSUPPORT
+  // flags for timestamp
+  /** set the file's last access date */
+  uint8_t const T_ACCESS = 1;
+  /** set the file's creation date and time */
+  uint8_t const T_CREATE = 2;
+  /** Set the file's write date and time */
+  uint8_t const T_WRITE = 4;
+#endif //USBSUPPORT
 // values for type_
 /** This file has not been opened. */
 uint8_t const FAT_FILE_TYPE_CLOSED = 0;
@@ -101,81 +104,86 @@ uint8_t const FAT_FILE_TYPE_SUBDIR = 4;
 /** Test value for directory type */
 uint8_t const FAT_FILE_TYPE_MIN_DIR = FAT_FILE_TYPE_ROOT_FIXED;
 
-/** date field for FAT directory entry
- * \param[in] year [1980,2107]
- * \param[in] month [1,12]
- * \param[in] day [1,31]
- *
- * \return Packed date for dir_t entry.
- */
-static inline uint16_t FAT_DATE(uint16_t year, uint8_t month, uint8_t day) {
-  return (year - 1980) << 9 | month << 5 | day;
-}
-/** year part of FAT directory date field
- * \param[in] fatDate Date in packed dir format.
- *
- * \return Extracted year [1980,2107]
- */
-static inline uint16_t FAT_YEAR(uint16_t fatDate) {
-  return 1980 + (fatDate >> 9);
-}
-/** month part of FAT directory date field
- * \param[in] fatDate Date in packed dir format.
- *
- * \return Extracted month [1,12]
- */
-static inline uint8_t FAT_MONTH(uint16_t fatDate) {
-  return (fatDate >> 5) & 0XF;
-}
-/** day part of FAT directory date field
- * \param[in] fatDate Date in packed dir format.
- *
- * \return Extracted day [1,31]
- */
-static inline uint8_t FAT_DAY(uint16_t fatDate) {
-  return fatDate & 0X1F;
-}
-/** time field for FAT directory entry
- * \param[in] hour [0,23]
- * \param[in] minute [0,59]
- * \param[in] second [0,59]
- *
- * \return Packed time for dir_t entry.
- */
-static inline uint16_t FAT_TIME(uint8_t hour, uint8_t minute, uint8_t second) {
-  return hour << 11 | minute << 5 | second >> 1;
-}
-/** hour part of FAT directory time field
- * \param[in] fatTime Time in packed dir format.
- *
- * \return Extracted hour [0,23]
- */
-static inline uint8_t FAT_HOUR(uint16_t fatTime) {
-  return fatTime >> 11;
-}
-/** minute part of FAT directory time field
- * \param[in] fatTime Time in packed dir format.
- *
- * \return Extracted minute [0,59]
- */
-static inline uint8_t FAT_MINUTE(uint16_t fatTime) {
-  return(fatTime >> 5) & 0X3F;
-}
-/** second part of FAT directory time field
- * Note second/2 is stored in packed time.
- *
- * \param[in] fatTime Time in packed dir format.
- *
- * \return Extracted second [0,58]
- */
-static inline uint8_t FAT_SECOND(uint16_t fatTime) {
-  return 2*(fatTime & 0X1F);
-}
-/** Default date for file timestamps is 1 Jan 2000 */
-uint16_t const FAT_DEFAULT_DATE = ((2000 - 1980) << 9) | (1 << 5) | 1;
-/** Default time for file timestamp is 1 am */
-uint16_t const FAT_DEFAULT_TIME = (1 << 11);
+#ifndef USBSUPPORT
+  /** date field for FAT directory entry
+   * \param[in] year [1980,2107]
+   * \param[in] month [1,12]
+   * \param[in] day [1,31]
+   *
+   * \return Packed date for dir_t entry.
+   */
+  static inline uint16_t FAT_DATE(uint16_t year, uint8_t month, uint8_t day) {
+    return (year - 1980) << 9 | month << 5 | day;
+  }
+  /** year part of FAT directory date field
+   * \param[in] fatDate Date in packed dir format.
+   *
+   * \return Extracted year [1980,2107]
+   */
+  static inline uint16_t FAT_YEAR(uint16_t fatDate) {
+    return 1980 + (fatDate >> 9);
+  }
+  /** month part of FAT directory date field
+   * \param[in] fatDate Date in packed dir format.
+   *
+   * \return Extracted month [1,12]
+   */
+  static inline uint8_t FAT_MONTH(uint16_t fatDate) {
+    return (fatDate >> 5) & 0XF;
+  }
+  /** day part of FAT directory date field
+   * \param[in] fatDate Date in packed dir format.
+   *
+   * \return Extracted day [1,31]
+   */
+  static inline uint8_t FAT_DAY(uint16_t fatDate) {
+    return fatDate & 0X1F;
+  }
+  /** time field for FAT directory entry
+   * \param[in] hour [0,23]
+   * \param[in] minute [0,59]
+   * \param[in] second [0,59]
+   *
+   * \return Packed time for dir_t entry.
+   */
+  static inline uint16_t FAT_TIME(uint8_t hour, uint8_t minute, uint8_t second) {
+    return hour << 11 | minute << 5 | second >> 1;
+  }
+  /** hour part of FAT directory time field
+   * \param[in] fatTime Time in packed dir format.
+   *
+   * \return Extracted hour [0,23]
+   */
+  static inline uint8_t FAT_HOUR(uint16_t fatTime) {
+    return fatTime >> 11;
+  }
+  /** minute part of FAT directory time field
+   * \param[in] fatTime Time in packed dir format.
+   *
+   * \return Extracted minute [0,59]
+   */
+  static inline uint8_t FAT_MINUTE(uint16_t fatTime) {
+    return(fatTime >> 5) & 0X3F;
+  }
+  /** second part of FAT directory time field
+   * Note second/2 is stored in packed time.
+   *
+   * \param[in] fatTime Time in packed dir format.
+   *
+   * \return Extracted second [0,58]
+   */
+  static inline uint8_t FAT_SECOND(uint16_t fatTime) {
+    return 2*(fatTime & 0X1F);
+  }
+  /** Default date for file timestamps is 1 Jan 2000 */
+  uint16_t const FAT_DEFAULT_DATE = ((2000 - 1980) << 9) | (1 << 5) | 1;
+  /** Default time for file timestamp is 1 am */
+  uint16_t const FAT_DEFAULT_TIME = (1 << 11);
+  
+#endif //USBSUPPORT
 //------------------------------------------------------------------------------
+
+
 /**
  * \class SdBaseFile
  * \brief Base class for SdFile with Print and C++ streams.
