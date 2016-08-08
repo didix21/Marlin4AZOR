@@ -34,7 +34,6 @@
 /**
  * \brief Cache for an SD data block
  */
-#ifndef USBSUPPORT  
   union cache_t {
              /** Used to access cached file data blocks. */
     uint8_t  data[512];
@@ -53,7 +52,6 @@
              /** Used to access to a cached FAT32 FSINFO sector. */
     fat32_fsinfo_t fsinfo;
   };
- #endif
 //------------------------------------------------------------------------------
 /**
  * \class SdVolume

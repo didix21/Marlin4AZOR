@@ -231,9 +231,7 @@
 #endif
 
 #ifdef SDSUPPORT
-#ifndef USBSUPPORT
   CardReader card;
-#endif
 #endif
 
 bool Running = true;
@@ -611,14 +609,12 @@ void servo_init() {
  UsbFat key(&bulk);
 
  // Create a object File
- File file;
+ File fileUsb;
 
  /* Variables */
  uint8_t usbState;
  uint8_t usbLastSate;
 
- 
- 
  //Function to know the status of USB
  bool isSomeDeviceConnected (USB *usbDevice) {
   static bool deviceConnected = false;
@@ -632,8 +628,7 @@ void servo_init() {
       case(USB_STATE_RUNNING):
         deviceConnected = true;
       break;
-    }
-    
+    }   
   }
   return deviceConnected;
  }
@@ -777,15 +772,12 @@ void loop() {
   if (commands_in_queue < BUFSIZE - 1) get_command();
   
   #ifdef SDSUPPORT
-  #ifndef USBSUPPORT
     card.checkautostart(false);
-  #endif
   #endif
 
   if (commands_in_queue) {
 
     #ifdef SDSUPPORT
-    #ifndef USBSUPPORT
       if (card.saving) {
         char *command = command_queue[cmd_queue_index_r];
         if (strstr_P(command, PSTR("M29"))) {
@@ -808,7 +800,6 @@ void loop() {
     #else
 
       process_next_command();
-    #endif // USBSUPPORT
     #endif // SDSUPPORT
 
     commands_in_queue--;
@@ -956,7 +947,6 @@ void get_command() {
   }
 
   #ifdef SDSUPPORT
-  #ifndef USBSUPPORT
     if (!card.sdprinting || serial_count) return;
 
     // '#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
@@ -1006,7 +996,6 @@ void get_command() {
         if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
       }
     }
-  #endif // USBSUPPORT
   #endif // SDSUPPORT
 }
 
@@ -2972,7 +2961,6 @@ inline void gcode_M17() {
 }
 
 #ifdef SDSUPPORT
-#ifndef USBSUPPORT
   /**
    * M20: List SD card to serial output
    */
@@ -3088,7 +3076,6 @@ inline void gcode_M17() {
       card.removeFile(current_command_args);
     }
   }
-#endif // USBSUPPORT
 #endif //SDSUPPORT
 
 /**
@@ -3107,7 +3094,6 @@ inline void gcode_M31() {
 }
 
 #ifdef SDSUPPORT
-#ifndef USBSUPPORT
   /**
    * M32: Select file and start SD Print
    */
@@ -3161,7 +3147,6 @@ inline void gcode_M31() {
   inline void gcode_M928() {
     card.openLogFile(current_command_args);
   }
-#endif // USBSUPPORT
 #endif // SDSUPPORT
 
 /**
@@ -4882,10 +4867,8 @@ inline void gcode_M408() {
     
     //,"fraction": 
     #ifdef SDSUPPORT
-    #ifndef USBSUPPORT
       SERIAL_PROTOCOLPGM(",\"fraction_printed\":");
       SERIAL_PROTOCOL_F(card.getFractionPrinted(),1);
-    #endif
     #endif
     
     if (type == 0){
@@ -5586,7 +5569,6 @@ void process_next_command() {
         break;
 
       #ifdef SDSUPPORT
-      #ifndef USBSUPPORT
         case 20: // M20 - list SD card
           gcode_M20(); break;
         case 21: // M21 - init SD card
@@ -5619,8 +5601,7 @@ void process_next_command() {
 
         case 928: //M928 - Start SD write
           gcode_M928(); break;
-
-      #endif // USBSUPPORT
+          
       #endif // SDSUPPORT
 
       case 31: //M31 take time since the start of the SD print or an M109 command

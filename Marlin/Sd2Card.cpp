@@ -20,7 +20,6 @@
 #include "Marlin.h"
 
 #ifdef SDSUPPORT
-#ifndef USBSUPPORT
 #include "Sd2Card.h"
 //------------------------------------------------------------------------------
 
@@ -638,6 +637,4 @@ bool Sd2Card::writeStop() {
   chipSelectHigh();
   return false;
 }
-
-#endif
-#endif
+#endif //SDSUPPORT

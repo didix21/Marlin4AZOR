@@ -24,7 +24,6 @@
 #include "Marlin.h"
 
 #ifdef SDSUPPORT
-#ifndef USBSUPPORT
 #include "SdBaseFile.h"
 #include <Print.h>
 #ifndef SdFile_h
@@ -51,5 +50,4 @@ class SdFile : public SdBaseFile, public Print {
 };
 #endif  // SdFile_h
 
-#endif // USBSUPPORT
 #endif

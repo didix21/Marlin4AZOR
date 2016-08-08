@@ -19,7 +19,6 @@
  */
 #include "Marlin.h"
 #ifdef SDSUPPORT
-#ifndef USBSUPPORT
 
 #ifndef SdFatStructs_h
 #define SdFatStructs_h
@@ -642,7 +641,5 @@ static inline uint8_t DIR_IS_FILE_OR_SUBDIR(const dir_t* dir) {
   return (dir->attributes & DIR_ATT_VOLUME_ID) == 0;
 }
 #endif  // SdFatStructs_h
-
-#endif // USBSUPPORT
 
 #endif
