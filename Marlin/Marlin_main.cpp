@@ -599,40 +599,40 @@ void servo_init() {
   void enableStepperDrivers() { pinMode(STEPPER_RESET_PIN, INPUT); }  // set to input, which allows it to be pulled high by pullups
 #endif
 
-#ifdef USBSUPPORT
- //Create USB host object
- USB usbStick;
- 
- BulkOnly bulk(&usbStick);
-
- //File system
- UsbFat key(&bulk);
-
- // Create a object File
- File fileUsb;
-
- /* Variables */
- uint8_t usbState;
- uint8_t usbLastSate;
-
- //Function to know the status of USB
- bool isSomeDeviceConnected (USB *usbDevice) {
-  static bool deviceConnected = false;
-  usbState = usbDevice->getUsbTaskState();
-  if(usbState != usbLastSate){
-    usbLastSate = usbState;
-    switch(usbState){
-      case(USB_DETACHED_SUBSTATE_WAIT_FOR_DEVICE):
-        deviceConnected = false;
-      break;
-      case(USB_STATE_RUNNING):
-        deviceConnected = true;
-      break;
-    }   
-  }
-  return deviceConnected;
- }
-#endif
+//#ifdef USBSUPPORT
+// //Create USB host object
+// USB usbStick;
+// 
+// BulkOnly bulk(&usbStick);
+//
+// //File system
+// UsbFat key(&bulk);
+//
+// // Create a object File
+// File fileUsb;
+//
+// /* Variables */
+// uint8_t usbState;
+// uint8_t usbLastSate;
+//
+// //Function to know the status of USB
+// bool isSomeDeviceConnected (USB *usbDevice) {
+//  static bool deviceConnected = false;
+//  usbState = usbDevice->getUsbTaskState();
+//  if(usbState != usbLastSate){
+//    usbLastSate = usbState;
+//    switch(usbState){
+//      case(USB_DETACHED_SUBSTATE_WAIT_FOR_DEVICE):
+//        deviceConnected = false;
+//      break;
+//      case(USB_STATE_RUNNING):
+//        deviceConnected = true;
+//      break;
+//    }   
+//  }
+//  return deviceConnected;
+// }
+//#endif
 
 /**
  * Marlin entry-point: Set up before the program loop
@@ -653,7 +653,7 @@ void servo_init() {
  *    â€¢ status LEDs
  */
 
-bool connectToSomething;
+//bool connectToSomething;
 void setup() {
   setup_killpin();
   setup_filrunoutpin();
@@ -2996,6 +2996,12 @@ inline void gcode_M17() {
   
       SERIAL_PROTOCOLLN("]}");
     #endif //SDSUPPORT
+
+    #ifdef USBSUPPORT
+//      MYSERIAL.println();
+//      key.ls(&MYSERIAL, LS_A | LS_R);
+//      MYSERIAL.println();
+    #endif
     
   }
 
@@ -3010,13 +3016,13 @@ inline void gcode_M17() {
 
     //Init USB Stick
     #ifdef USBSUPPORT
-      if(!initUSB(&usbStick)){
-        SERIAL_ECHOLNPGM(MSG_USB_INIT_FAIL);
-      }
-      else {
-       if(!key.begin()) SERIAL_ECHOLNPGM(MSG_USB_VOL_INIT_FAIL);
-       else             SERIAL_ECHOLNPGM(MSG_USB_STICK_OK);
-      }
+//      if(!isSomeDeviceConnected(&usbStick)){
+//        SERIAL_ECHOLNPGM(MSG_USB_INIT_FAIL);
+//      }
+//      else {
+//       if(!key.begin()) SERIAL_ECHOLNPGM(MSG_USB_VOL_INIT_FAIL);
+//       else             SERIAL_ECHOLNPGM(MSG_USB_STICK_OK);
+//      }
     #endif
   }
 
@@ -3035,6 +3041,10 @@ inline void gcode_M17() {
   inline void gcode_M23() {
     #ifdef SDSUPPORT
       card.openFile(current_command_args, true);
+    #endif
+
+    #ifdef USBSUPPORT
+      //fileUsb.open(current_comamand_args,);
     #endif
   }
 
@@ -4917,7 +4927,7 @@ inline void gcode_M408() {
 
     #ifdef USBSUPPORT
       SERIAL_PROTOCOLPGM(",\"usb_state\":");
-      SERIAL_PROTOCOL(isSomeDeviceConnected(&usbStick));
+   // SERIAL_PROTOCOL(isSomeDeviceConnected(&usbStick));
     #endif
     
     if (type == 0){
