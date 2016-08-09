@@ -45,6 +45,9 @@
 #include "stepper.h"
 #include "temperature.h"
 #include "cardreader.h"
+#ifdef USBSUPPORT
+  #include "UsbReader.h"
+#endif
 #include "watchdog.h"
 #include "configuration_store.h"
 #include "language.h"
@@ -232,6 +235,10 @@
 
 #ifdef SDSUPPORT
   CardReader card;
+#endif
+
+#ifdef USBSUPPORT
+  UsbReader usbStick;
 #endif
 
 bool Running = true;
@@ -3016,6 +3023,7 @@ inline void gcode_M17() {
 
     //Init USB Stick
     #ifdef USBSUPPORT
+        usbStick.initUsb();
 //      if(!isSomeDeviceConnected(&usbStick)){
 //        SERIAL_ECHOLNPGM(MSG_USB_INIT_FAIL);
 //      }

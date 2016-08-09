@@ -1,14 +1,15 @@
+#include "Marlin.h"
 #include "UsbReader.h"
 
 #ifdef USBSUPPORT
 
-UsbReader::UsbReader() {
+UsbReader::UsbReader():bulk(&usb),key(&bulk) { // Quick Initialitzation of constructors BulkOnly and UsbFat
   usbOK = false;
   usbState = 0;
   usbLastSate = 0;
 }
 
-bool UsbReader::isSomeDeviceConnected (USB *usbDevice) {
+bool UsbReader::isSomeDeviceConnected (USB *usbDevice) { // Is Some device Connected
   static bool deviceConnected = false;
   usbState = usbDevice->getUsbTaskState();
   if(usbState != usbLastSate){
@@ -25,7 +26,7 @@ bool UsbReader::isSomeDeviceConnected (USB *usbDevice) {
   return deviceConnected;
  }
 
-void UsbReader::initUsb(){
+void UsbReader::initUsb(){ //Inits USB
   usbOK = false;
   if(!isSomeDeviceConnected(&usb)){
      SERIAL_ECHOLNPGM(MSG_USB_INIT_FAIL);
@@ -41,6 +42,9 @@ void UsbReader::initUsb(){
 
 void UsbReader::openFile(char* name, bool read, bool replace_current/*=true*/){
   if(!usbOK) return; //Not initialized? Then return
+  if(file.isOpen()){
+    
+  }
   
 }
 

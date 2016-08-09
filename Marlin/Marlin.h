@@ -17,7 +17,7 @@
 #include "fastio.h"
 #include "Configuration.h"
 #ifdef USBSUPPORT
-  #include "Usb_Stick.h"
+  #include "UsbReader.h"
 #endif
 #include "pins.h"
 #include "fsr_sensor.h"
