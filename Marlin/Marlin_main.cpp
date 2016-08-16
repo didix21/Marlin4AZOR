@@ -1005,6 +1005,59 @@ void get_command() {
       }
     }
   #endif // SDSUPPORT
+
+  #ifdef USBSUPPORT
+    if(!usbStick.usbprinting || serial_count) return;
+
+    // '#' stops reading from USB to the buffer prematurely, so procedural macro calls are possible
+    // if it occurs, stopUSB_buffering is triggered and the buffer is ran dry.
+    // this character _can_ occur in serial com, due to checksums. however, no checksums are used in SD printing /*correct the last line*/
+    static bool stopUSB_buffering = false;
+    if (commands_in_queue == 0) stopUSB_buffering = false;
+
+    while (!usbStick.eof() && commands_in_queue < BUFSIZE && !stopUSB_buffering) {
+      int16_t nUSB = usbStick.get();
+      serial_char = (char)nUSB;
+      if (serial_char == '\n' || serial_char == '\r' ||
+          ((serial_char == '#' || serial_char == ':') && !comment_mode) ||
+          serial_count >= (MAX_CMD_SIZE - 1) || nUSB == -1
+      ) {
+        if (usbStick.eof()) {
+          SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
+          print_job_stop_ms = millis();
+          char timeUSB[30];
+          millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
+          int hours = t / 60 / 60, minutes = (t / 60) % 60;
+          sprintf_P(timeUSB, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
+          SERIAL_ECHO_START;
+          SERIAL_ECHOLN(timeUSB);
+         // lcd_setstatus(timeUSB, true);
+         // card.printingHasFinished();
+         // card.checkautostart(true);
+        }
+        if (serial_char == '#') stopUSB_buffering = true;
+
+        if (!serial_count) {
+          comment_mode = false; //for new command
+          return; //if empty line
+        }
+        command_queue[cmd_queue_index_w][serial_count] = 0; //terminate string
+        // if (!comment_mode) {
+       // fromsd[cmd_queue_index_w] = true;
+        commands_in_queue += 1;
+        cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
+        // }
+        comment_mode = false; //for new command
+        serial_count = 0; //clear buffer
+      }
+      else {
+        if (serial_char == ';') comment_mode = true;
+        if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
+      }
+    }
+   
+  #endif // USBSUPPORT
+  
 }
 
 bool code_has_value() {
@@ -3146,12 +3199,11 @@ inline void gcode_M17() {
     #endif
   }
 
-
 /**
  * M31: Get the time since the start of SD Print (or last M109)
  */
 inline void gcode_M31() {
- #ifdef SDSUPPORT
+ #if (defined(SDSUPPORT) || defined(USBSUPPORT))
     print_job_stop_ms = millis();
     millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
     int min = t / 60, sec = t % 60;
@@ -3163,19 +3215,7 @@ inline void gcode_M31() {
     autotempShutdown();
   #endif
 
-  #ifdef USBSUPPORT
-    print_job_stop_ms = millis();
-    millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
-    int min = t / 60, sec = t % 60;
-    char time[30];
-    sprintf_P(time, PSTR("%i min, %i sec"), min, sec);
-    SERIAL_ECHO_START;
-    SERIAL_ECHOLN(time);
- //   lcd_setstatus(time);
-    autotempShutdown();
-  #endif
 }
-
 
   /**
    * M32: Select file and start SD Print
@@ -3927,7 +3967,6 @@ inline void gcode_M81() {
   #endif
 }
 
-
 /**
  * M82: Set E codes absolute (default)
  */
@@ -4170,7 +4209,6 @@ inline void gcode_M201() {
   }
 #endif
 
-
 /**
  * M203: Set maximum feedrate that your machine can sustain (M203 X200 Y200 Z300 E10000) in mm/sec
  */
@@ -4263,6 +4301,7 @@ inline void gcode_M206() {
     if (code_seen('S')) delta_segments_per_second = code_value();
     recalc_delta_settings(delta_radius, delta_diagonal_rod);
   }
+  
   /**
    * M666: Set delta endstop adjustment
    */
@@ -4274,6 +4313,7 @@ inline void gcode_M206() {
     }
   }
 #elif defined(Z_DUAL_ENDSTOPS) // !DELTA && defined(Z_DUAL_ENDSTOPS)
+ 
   /**
    * M666: For Z Dual Endstop setup, set z axis offset to the z2 axis.
    */

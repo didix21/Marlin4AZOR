@@ -29,6 +29,7 @@
 #include "ultralcd.h"
 #include "language.h"
 #include "cardreader.h"
+#include "UsbReader.h"
 #if HAS_DIGIPOTSS
   #include <SPI.h>
 #endif
@@ -192,10 +193,14 @@ void checkHitEndstops() {
 
     endstops_hit_on_purpose();
 
-    #if defined(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED) && defined(SDSUPPORT)
+    #if defined(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED) && (defined(SDSUPPORT) || defined(USBSUPPORT))
       if (abort_on_endstop_hit) {
         card.sdprinting = false;
         card.closefile();
+        /*** Added by didix21 ***/
+        usbStick.usbprinting = false;
+        usbStick.closeFile();
+        /************************/
         quickStop();
         disable_all_heaters(); // switch off all heaters.
       }

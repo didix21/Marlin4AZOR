@@ -14,8 +14,9 @@ class UsbReader {
     /**
      * Main Class Function
      */
-       
+    bool eof();   
     bool isSomeDeviceConnected (USB *usbDevice);
+   
     void closeFile(bool store_location=false);
     void getStatus(); 
     void initUsb(); // Inits the USB Stick
@@ -24,7 +25,8 @@ class UsbReader {
     void release();
     void removeFile(char* name);
     void startFileprint();
-    
+
+    FORCE_INLINE int16_t get() {usbpos = fatFile.curPosition(); return (int16_t)file.read();}
     
 
   public:
@@ -32,13 +34,18 @@ class UsbReader {
 
   private:
     /** 
-     * USB Variables  
+     * USB Classes  
      */
     USB usb;
     File file, root, *curDir;
+    FatFile fatFile;
     BulkOnly bulk;
     UsbFat key;
-
+    ios iosFile;
+    
+    /** 
+     * USB Variables  
+     */  
     uint8_t usbState, usbLastSate;
     uint32_t filesize;
     uint32_t usbpos;

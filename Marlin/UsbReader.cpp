@@ -13,6 +13,10 @@ UsbReader::UsbReader():bulk(&usb),key(&bulk) { // Quick Initialitzation of const
   usbLastSate = 0;
 }
 
+bool UsbReader::eof() { //End of file
+ return iosFile.eof();
+}
+
 bool UsbReader::isSomeDeviceConnected (USB *usbDevice) { // Is Some device Connected
   static bool deviceConnected = false;
   usbState = usbDevice->getUsbTaskState();
