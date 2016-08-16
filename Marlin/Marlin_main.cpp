@@ -3137,6 +3137,13 @@ inline void gcode_M17() {
         card.removeFile(current_command_args);
       }
     #endif
+
+    #ifdef USBSUPPORT
+      if(usbStick.usbOK) {
+        usbStick.closeFile();
+        usbStick.removeFile(current_command_args);
+      }
+    #endif
   }
 
 
@@ -3196,7 +3203,7 @@ inline void gcode_M31() {
           if (!call_procedure)
             print_job_start_ms = millis(); //procedure calls count as normal print time.
         }
-     #endif
+     #endif // SDSUPPORT
      
      #ifdef USBSUPPORT
         if (usbStick.usbprinting) {
@@ -3220,7 +3227,7 @@ inline void gcode_M31() {
 //          if (!call_procedure)
 //            print_job_start_ms = millis(); //procedure calls count as normal print time.
         }
-     #endif
+     #endif //USBSUPORT
   }
   
 #ifdef SDSUPPORT

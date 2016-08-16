@@ -16,17 +16,19 @@ class UsbReader {
      */
        
     bool isSomeDeviceConnected (USB *usbDevice);
+    void closeFile(bool store_location=false);
     void getStatus(); 
     void initUsb(); // Inits the USB Stick
-    void openFile(char* name,bool read, bool replace_current=true); // Open a file 
+    void openFile(char* name, bool read, bool replace_current=true); // Open a file 
     void pauseUSBPrint();
     void release();
+    void removeFile(char* name);
     void startFileprint();
     
     
 
   public:
-    bool usbOK, usbprinting;
+    bool saving, usbOK, usbprinting;
 
   private:
     /** 
@@ -39,6 +41,7 @@ class UsbReader {
 
     uint8_t usbState, usbLastSate;
     uint32_t filesize;
+    uint32_t usbpos;
     size_t namesize;
 
     

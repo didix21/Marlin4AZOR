@@ -5,6 +5,8 @@
 
 UsbReader::UsbReader():bulk(&usb),key(&bulk) { // Quick Initialitzation of constructors BulkOnly and UsbFat
   filesize = 0;
+  saving = false;
+  usbpos = 0;
   usbprinting = false;
   usbOK = false;
   usbState = 0;
@@ -27,13 +29,23 @@ bool UsbReader::isSomeDeviceConnected (USB *usbDevice) { // Is Some device Conne
   }
   return deviceConnected;
  }
+
+ void UsbReader::closeFile(bool store_location) {
+  file.sync();
+  file.close();
+  saving = false;
+  if (store_location) {
+    //future: store printer state, filename and position for continuing a stopped print
+    // so one can unplug the printer and continue printing the next day.
+  }
+ }
  
  void UsbReader::getStatus() {
   if(usbOK) {
-//    SERIAL_PROTOCOLPGM(MSG_USB_PRINTING_BYTE);
-//    SERIAL_PROTOCOL(usbpos);
-//    SERIAL_PROTOCOLCHAR('/');
-//    SERIAL_PROTOCOLLN(filesize);
+    SERIAL_PROTOCOLPGM(MSG_USB_PRINTING_BYTE);
+    SERIAL_PROTOCOL(usbpos);
+    SERIAL_PROTOCOLCHAR('/');
+    SERIAL_PROTOCOLLN(filesize);
   }
   else {
     SERIAL_PROTOCOLLNPGM(MSG_USB_NOT_PRINTING);   
@@ -80,6 +92,18 @@ void UsbReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
 void UsbReader::release() {
   usbprinting = false;
   usbOK = false;
+}
+
+void UsbReader::removeFile(char *name) {
+  if(!usbOK) return;
+  file.close();
+  usbprinting = false;
+
+  curDir = &root;
+  char *fname = name;
+
+  file.remove(curDir, fname);
+  
 }
 
 void UsbReader::startFileprint() {
