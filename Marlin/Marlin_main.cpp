@@ -3043,6 +3043,9 @@ inline void gcode_M17() {
     #ifdef SDSUPPORT
       card.release();
     #endif
+    #ifdef USBSUPPORT
+      usbStick.release();
+    #endif
   }
 
   /**
@@ -3054,7 +3057,7 @@ inline void gcode_M17() {
     #endif
 
     #ifdef USBSUPPORT
-      //fileUsb.openFile(current_comamand_args,);
+      usbStick.openFile(current_command_args, true);
     #endif
   }
 
@@ -3066,6 +3069,11 @@ inline void gcode_M17() {
         card.startFileprint();
         print_job_start_ms = millis();
      #endif
+     
+     #ifdef USBSUPPORT
+        usbStick.startFileprint();
+        print_job_start_ms = millis();
+     #endif
   }
 
   /**
@@ -3074,6 +3082,10 @@ inline void gcode_M17() {
   inline void gcode_M25() {
     #ifdef SDSUPPORT
       card.pauseSDPrint();
+    #endif
+    
+    #ifdef USBSUPPORT
+      usbStick.pauseUSBPrint();
     #endif
   }
 
@@ -3092,6 +3104,9 @@ inline void gcode_M17() {
   inline void gcode_M27() {
     #ifdef SDSUPPORT
       card.getStatus();
+    #endif
+    #ifdef USBSUPPORT
+      usbStick.getStatus();
     #endif
   }
 
@@ -3140,6 +3155,18 @@ inline void gcode_M31() {
     lcd_setstatus(time);
     autotempShutdown();
   #endif
+
+  #ifdef USBSUPPORT
+    print_job_stop_ms = millis();
+    millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
+    int min = t / 60, sec = t % 60;
+    char time[30];
+    sprintf_P(time, PSTR("%i min, %i sec"), min, sec);
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLN(time);
+ //   lcd_setstatus(time);
+    autotempShutdown();
+  #endif
 }
 
 
@@ -3172,7 +3199,27 @@ inline void gcode_M31() {
      #endif
      
      #ifdef USBSUPPORT
-
+        if (usbStick.usbprinting) {
+//          st_synchronize();
+//
+//        char* namestartpos = strchr(current_command_args, '!');  // Find ! to indicate filename string start.
+//        if (!namestartpos)
+//          namestartpos = current_command_args; // Default name position, 4 letters after the M
+//        else
+//          namestartpos++; //to skip the '!'
+//    
+//        bool call_procedure = code_seen('P') && (seen_pointer < namestartpos);
+//    
+//        if (card.cardOK) {
+//          card.openFile(namestartpos, true, !call_procedure);
+//    
+//          if (code_seen('S') && seen_pointer < namestartpos) // "S" (must occur _before_ the filename!)
+//            card.setIndex(code_value_short());
+//    
+//          card.startFileprint();
+//          if (!call_procedure)
+//            print_job_start_ms = millis(); //procedure calls count as normal print time.
+        }
      #endif
   }
   
