@@ -2970,7 +2970,7 @@ inline void gcode_M17() {
 
 
   /**
-   * M20: List SD card to serial output
+   * M20: List SD card and USB Stick to serial output
    */
   inline void gcode_M20() {
     #ifdef SDSUPPORT
@@ -3013,7 +3013,7 @@ inline void gcode_M17() {
   }
 
   /**
-   * M21: Init SD Card
+   * M21: Init SD Card and USB Stick
    */
   inline void gcode_M21() {
     // Init SD Card
@@ -3024,6 +3024,7 @@ inline void gcode_M17() {
     //Init USB Stick
     #ifdef USBSUPPORT
         usbStick.initUsb();
+/********************* This will be deleted in futur *********************/
 //      if(!isSomeDeviceConnected(&usbStick)){
 //        SERIAL_ECHOLNPGM(MSG_USB_INIT_FAIL);
 //      }
@@ -3031,6 +3032,7 @@ inline void gcode_M17() {
 //       if(!key.begin()) SERIAL_ECHOLNPGM(MSG_USB_VOL_INIT_FAIL);
 //       else             SERIAL_ECHOLNPGM(MSG_USB_STICK_OK);
 //      }
+/*************************************************************************/
     #endif
   }
 
@@ -3052,7 +3054,7 @@ inline void gcode_M17() {
     #endif
 
     #ifdef USBSUPPORT
-      //fileUsb.open(current_comamand_args,);
+      //fileUsb.openFile(current_comamand_args,);
     #endif
   }
 

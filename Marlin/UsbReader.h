@@ -30,7 +30,6 @@ class UsbReader {
     BulkOnly bulk;
     UsbFat key;
 
-    
     uint8_t usbState, usbLastSate;
 
     

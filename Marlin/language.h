@@ -152,9 +152,21 @@
 #define MSG_SD_CANT_ENTER_SUBDIR            "Cannot enter subdir: "
 
 // USB Message
+#define MSG_USB_CANT_OPEN_SUBDIR            "Cannot open subdir"
 #define MSG_USB_INIT_FAIL                   "USB init fail"
 #define MSG_USB_VOL_INIT_FAIL               "UsbFat.begin init fail"
+#define MSG_USB_OPENROOT_FAIL               "openRoot failed"
 #define MSG_USB_STICK_OK                    "USB Stick OK"
+#define MSG_USB_WORKDIR_FAIL                "workDir open failed"
+#define MSG_USB_OPEN_FILE_FAIL               "open failed, File: "
+#define MSG_USB_FILE_OPENED                  "File opened: "
+#define MSG_USB_SIZE                         " Size: "
+#define MSG_USB_FILE_SELECTED                "File selected"
+#define MSG_USB_WRITE_TO_FILE                "Writing to file: "
+#define MSG_USB_PRINTING_BYTE                "USB printing byte "
+#define MSG_USB_NOT_PRINTING                 "Not USB printing"
+#define MSG_USB_ERR_WRITE_TO_FILE            "error writing to file"
+#define MSG_USB_CANT_ENTER_SUBDIR            "Cannot enter subdir: "
 
 
 #define MSG_STEPPER_TOO_HIGH                "Steprate too high: "
