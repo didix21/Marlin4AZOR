@@ -407,6 +407,12 @@ bool target_direction;
   static bool fromsd[BUFSIZE];
 #endif
 
+/******* Added by didix21 *******/
+#ifdef USBSUPPORT
+  static bool fromUsb[BUFSIZE];
+#endif
+/*******************************/
+
 #if NUM_SERVOS > 0
   Servo servo[NUM_SERVOS];
 #endif
@@ -710,6 +716,12 @@ void setup() {
     for (int8_t i = 0; i < BUFSIZE; i++) fromsd[i] = false;
   #endif
 
+  /******************** Added by didix21 ********************/
+  #ifdef USBSUPPORT
+   for(int8_t i = 0; i < BUFSIZE; i++) fromUsb[i] = false;
+  #endif
+  /*********************************************************/
+  
   // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
   Config_RetrieveSettings();
 
@@ -874,6 +886,12 @@ void get_command() {
         fromsd[cmd_queue_index_w] = false;
       #endif
 
+      /*********** Added by didix21 ***********/
+      #ifdef USBSUPPORT
+        fromUsb[cmd_queue_index_w] = false;
+      #endif
+      /***************************************/
+      
       char *npos = strchr(command, 'N');
       char *apos = strchr(command, '*');
       if (npos) {
@@ -1042,11 +1060,11 @@ void get_command() {
           return; //if empty line
         }
         command_queue[cmd_queue_index_w][serial_count] = 0; //terminate string
-        // if (!comment_mode) {
-       // fromsd[cmd_queue_index_w] = true;
+        // if (!comment_mode) { /* no descomentar */
+        fromUsb[cmd_queue_index_w] = true;
         commands_in_queue += 1;
         cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
-        // }
+        // } /* no descomentar */
         comment_mode = false; //for new command
         serial_count = 0; //clear buffer
       }
