@@ -287,6 +287,12 @@
 //#define CHDK 4        //Pin for triggering CHDK to take a picture see how to use it here http://captain-slow.dk/2014/03/09/3d-printing-timelapses/
 #define CHDK_DELAY 50 //How long in ms the pin should stay HIGH before going LOW again
 
+// @section usb
+#ifdef USBSUPPORT
+ #define USB_FINISHED_STEPPERRELEASE true  //if sd support and the file is finished: disable steppers?
+ #define USB_FINISHED_RELEASECOMMAND "M84 X Y Z E" // You might want to keep the z enabled so your bed stays in place.
+#endif
+
 // @section lcd
 
 #ifdef SDSUPPORT

@@ -1023,7 +1023,7 @@ void get_command() {
       }
     }
   #endif // SDSUPPORT
-
+/*********************************************************** Added by didix21 ****************************************************************/
   #ifdef USBSUPPORT
     if(!usbStick.usbprinting || serial_count) return;
 
@@ -1050,8 +1050,8 @@ void get_command() {
           SERIAL_ECHO_START;
           SERIAL_ECHOLN(timeUSB);
          // lcd_setstatus(timeUSB, true);
-         // card.printingHasFinished();
-         // card.checkautostart(true);
+          usbStick.printingHasFinished();
+          //usbStick.checkAutoStart(true);
         }
         if (serial_char == '#') stopUSB_buffering = true;
 
@@ -1061,7 +1061,7 @@ void get_command() {
         }
         command_queue[cmd_queue_index_w][serial_count] = 0; //terminate string
         // if (!comment_mode) { /* no descomentar */
-        fromUsb[cmd_queue_index_w] = true;
+        fromUsb[cmd_queue_index_w] = true; /* fromUsb created by didix21 */
         commands_in_queue += 1;
         cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
         // } /* no descomentar */
@@ -1075,7 +1075,7 @@ void get_command() {
     }
    
   #endif // USBSUPPORT
-  
+/**************************************************************************************************************************************************/ 
 }
 
 bool code_has_value() {
