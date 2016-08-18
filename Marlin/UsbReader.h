@@ -32,8 +32,8 @@ class UsbReader {
     void removeFile(char* name);
     void startFileprint();
 
-    FORCE_INLINE int16_t get() {usbpos = fatFile.curPosition(); return (int16_t)file.read();}
-    FORCE_INLINE void setIndex(long index) {usbpos = index; /*file.seekSet(index);*/}
+    FORCE_INLINE int16_t get() {usbpos = file.curPosition(); return (int16_t)file.read();}
+    FORCE_INLINE void setIndex(long index) {usbpos = index; file.seekSet(index);}
 
   public:
     bool saving, usbOK, usbprinting;

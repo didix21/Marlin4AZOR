@@ -1051,7 +1051,7 @@ void get_command() {
           SERIAL_ECHOLN(timeUSB);
          // lcd_setstatus(timeUSB, true);
           usbStick.printingHasFinished();
-          //usbStick.checkAutoStart(true);
+          usbStick.checkAutoStart(true);
         }
         if (serial_char == '#') stopUSB_buffering = true;
 
@@ -3264,26 +3264,26 @@ inline void gcode_M31() {
      #endif // SDSUPPORT
      
      #ifdef USBSUPPORT
-        if (usbStick.usbprinting) {
-//          st_synchronize();
-//
-//        char* namestartpos = strchr(current_command_args, '!');  // Find ! to indicate filename string start.
-//        if (!namestartpos)
-//          namestartpos = current_command_args; // Default name position, 4 letters after the M
-//        else
-//          namestartpos++; //to skip the '!'
-//    
-//        bool call_procedure = code_seen('P') && (seen_pointer < namestartpos);
-//    
-//        if (card.cardOK) {
-//          card.openFile(namestartpos, true, !call_procedure);
-//    
-//          if (code_seen('S') && seen_pointer < namestartpos) // "S" (must occur _before_ the filename!)
-//            card.setIndex(code_value_short());
-//    
-//          card.startFileprint();
-//          if (!call_procedure)
-//            print_job_start_ms = millis(); //procedure calls count as normal print time.
+        if (usbStick.usbprinting) 
+          st_synchronize();
+
+        char* namestartpos = strchr(current_command_args, '!');  // Find ! to indicate filename string start.
+        if (!namestartpos)
+          namestartpos = current_command_args; // Default name position, 4 letters after the M
+        else
+          namestartpos++; //to skip the '!'
+    
+        bool call_procedure = code_seen('P') && (seen_pointer < namestartpos);
+    
+        if (usbStick.usbOK) {
+          usbStick.openFile(namestartpos, true, !call_procedure);
+    
+          if (code_seen('S') && seen_pointer < namestartpos) // "S" (must occur _before_ the filename!)
+            usbStick.setIndex(code_value_short());
+    
+          usbStick.startFileprint();
+          if (!call_procedure)
+            print_job_start_ms = millis(); //procedure calls count as normal print time.
         }
      #endif //USBSUPORT
   }
