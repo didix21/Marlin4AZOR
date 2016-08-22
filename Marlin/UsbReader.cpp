@@ -42,6 +42,10 @@ bool UsbReader::isSomeDeviceConnected (USB *usbDevice) { // Is Some device Conne
   return deviceConnected;
  }
 
+float UsbReader::getFractionPrinted() {
+  return usbpos/filesize*100;
+}
+
 void UsbReader::closeFile(bool store_location) {
   file.sync();
   file.close();

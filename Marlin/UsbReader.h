@@ -20,6 +20,8 @@ class UsbReader {
     bool eof();   
     bool isSomeDeviceConnected (USB *usbDevice);
 
+    float getFractionPrinted();
+
     void checkAutoStart(bool x);
     void closeFile(bool store_location=false);
     void getAbsFilename(char *t);

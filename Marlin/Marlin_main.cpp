@@ -4924,8 +4924,9 @@ inline void gcode_M408() {
       "probe": "535", 
       "fanPercent": [75.0, 0.0],
       "fanRPM": 0,
-      "fraction_printed": 0.572,
+      "fraction_printed_sd": 0.572,
       "sd_state": 0,
+      "fraction_printed_usb": 0.572,
       "usb_state": 0,
     
     }
@@ -5038,20 +5039,24 @@ inline void gcode_M408() {
     
     
     #ifdef SDSUPPORT
-    //,"fraction_printed": 0
-      SERIAL_PROTOCOLPGM(",\"fraction_printed\":");
+    // ,"fraction_printed_sd": 0
+      SERIAL_PROTOCOLPGM(",\"fraction_printed_sd\":");
       SERIAL_PROTOCOL_F(card.getFractionPrinted(),1);
 
-    //,"sd_state:0"
+    // ,"sd_state:0"
       SERIAL_PROTOCOLPGM(",\"sd_state\":");
-      SERIAL_PROTOCOLPGM(card.cardOK); /* Change it */
+      SERIAL_PROTOCOL(card.cardOK); /* Change it */
     #endif
-
-    #ifdef USBSUPPORT
+ /***************** Added by didix21 *****************/
+    #ifdef USBSUPPORT 
+    // ,"fraction_printed_usb": 0
+      SERIAL_PROTOCOLPGM(",\"fraction_printed_usb\":");
+      SERIAL_PROTOCOL_F(usbStick.getFractionPrinted(),1);
+    // ,"usb_state": 0
       SERIAL_PROTOCOLPGM(",\"usb_state\":");
-   // SERIAL_PROTOCOL(isSomeDeviceConnected(&usbStick));
+      SERIAL_PROTOCOL(usbStick.usbOK);
     #endif
-    
+ /****************************************************/
     if (type == 0){
       SERIAL_PROTOCOLPGM("}");
       SERIAL_EOL;
