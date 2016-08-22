@@ -803,7 +803,7 @@ void loop() {
 
   if (commands_in_queue) {
 
-    #if defined(SDSUPPORT)
+    #ifdef SDSUPPORT
       if (card.saving) {
         char *command = command_queue[cmd_queue_index_r];
         if (strstr_P(command, PSTR("M29"))) {
@@ -822,8 +822,12 @@ void loop() {
       }
       else
         process_next_command();
-    /****************************** Added by didix21 /******************************/
-    #elif defined(USBSUPPORT)
+    #else      
+      process_next_command();
+    #endif //SDSUPPORT 
+
+        /****************************** Added by didix21 /******************************/
+    #ifdef USBSUPPORT
       if (usbStick.saving) {
         char *command = command_queue[cmd_queue_index_r];
         if (strstr_P(command, PSTR("M29"))) {
@@ -843,11 +847,10 @@ void loop() {
       else{
         process_next_command();
       }
-
     #else      
       process_next_command();
-    #endif //SDSUPPORT and USBSUPPORT
-
+    #endif //USBSUPPORT 
+   /************************************************************************************/   
     commands_in_queue--;
     cmd_queue_index_r = (cmd_queue_index_r + 1) % BUFSIZE;
   }
