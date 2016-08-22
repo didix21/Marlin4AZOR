@@ -9,6 +9,7 @@
 UsbReader::UsbReader():bulk(&usb),key(&bulk) { // Quick Initialitzation of constructors BulkOnly and UsbFat
   autostart_index = 0;
   autostart_stilltocheck = true; //The USB start is delayed, because otherwise the serial cannot answer fast enough to make contact with the host software.
+  logging = false;
   file_subcall_ctr = 0;
   filesize = 0;
   saving = false;
@@ -17,7 +18,7 @@ UsbReader::UsbReader():bulk(&usb),key(&bulk) { // Quick Initialitzation of const
   usbOK = false;
   usbState = 0;
   usbLastSate = 0;
-
+  
   next_autostart_ms = millis() + 5000;
 }
 
@@ -49,7 +50,7 @@ float UsbReader::getFractionPrinted() {
 void UsbReader::closeFile(bool store_location) {
   file.sync();
   file.close();
-  saving = false;
+  saving = logging = false;
   if (store_location) {
     //future: store printer state, filename and position for continuing a stopped print
     // so one can unplug the printer and continue printing the next day.
@@ -192,6 +193,11 @@ void UsbReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
    }
 }
 
+void UsbReader::openLogFile(char *name) {
+  logging = true;
+  openFile(name, false);
+}
+
 void UsbReader::pauseUSBPrint() {
   if(usbprinting) usbprinting = false;
 }
@@ -236,6 +242,29 @@ void UsbReader::removeFile(char *name) {
 void UsbReader::startFileprint() {
   if(usbOK){
     usbprinting = true;
+  }
+}
+
+void UsbReader::write_command(char *buf) {
+  char* begin = buf;
+  char* npos = 0;
+  char* end = buf + strlen(buf) - 1;
+
+  /* Instead of: file.writeError = false;
+   *  use clearWriteError()
+   */
+  file.clearWriteError();
+  if ((npos = strchr(buf, 'N')) != NULL) {
+    begin = strchr(npos, ' ') + 1;
+    end = strchr(npos, '*') - 1;
+  }
+  end[1] = '\r';
+  end[2] = '\n';
+  end[3] = '\0';
+  file.write(begin);
+  if(file.getWriteError()) {
+    SERIAL_ERROR_START;
+    SERIAL_ERRORLNPGM(MSG_USB_WRITE_TO_FILE);
   }
 }
 

@@ -105,14 +105,14 @@
  * M1   - Same as M0
  * M17  - Enable/Power all stepper motors
  * M18  - Disable all stepper motors; same as M84
- * M20  - List SD card
- * M21  - Init SD card
- * M22  - Release SD card
- * M23  - Select SD file (M23 filename.g)
- * M24  - Start/resume SD print
- * M25  - Pause SD print
- * M26  - Set SD position in bytes (M26 S12345)
- * M27  - Report SD print status
+ * M20  - List SD card or USB Stick
+ * M21  - Init SD card or USB Stick
+ * M22  - Release SD card or USB Stick
+ * M23  - Select SD file or USB file (M23 filename.g)
+ * M24  - Start/resume SD or USB print
+ * M25  - Pause SD or USB print
+ * M26  - Set SD or USB position in bytes (M26 S12345)
+ * M27  - Report SD or USB print status
  * M28  - Start SD write (M28 filename.g)
  * M29  - Stop SD write
  * M30  - Delete file from SD (M30 filename.g)
@@ -795,9 +795,15 @@ void loop() {
     card.checkautostart(false);
   #endif
 
+  /************** Added by didix21 **************/
+  #ifdef USBSUPPORT
+    usbStick.checkAutoStart(false);
+  #endif
+  /*********************************************/
+
   if (commands_in_queue) {
 
-    #ifdef SDSUPPORT
+    #if defined(SDSUPPORT)
       if (card.saving) {
         char *command = command_queue[cmd_queue_index_r];
         if (strstr_P(command, PSTR("M29"))) {
@@ -816,11 +822,31 @@ void loop() {
       }
       else
         process_next_command();
+    /****************************** Added by didix21 /******************************/
+    #elif defined(USBSUPPORT)
+      if (usbStick.saving) {
+        char *command = command_queue[cmd_queue_index_r];
+        if (strstr_P(command, PSTR("M29"))) {
+          // M29 closes the file
+          usbStick.closeFile();
+          SERIAL_PROTOCOLLNPGM(MSG_FILE_SAVED);
+        }
+        else {
+          // Write the string from the read buffer to USB
+          usbStick.write_command(command);
+          if (usbStick.logging)
+            process_next_command(); // The card is saving because it's logging
+          else
+            SERIAL_PROTOCOLLNPGM(MSG_OK);
+        }
+      }
+      else{
+        process_next_command();
+      }
 
-    #else
-
+    #else      
       process_next_command();
-    #endif // SDSUPPORT
+    #endif //SDSUPPORT and USBSUPPORT
 
     commands_in_queue--;
     cmd_queue_index_r = (cmd_queue_index_r + 1) % BUFSIZE;

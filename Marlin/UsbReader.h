@@ -28,11 +28,13 @@ class UsbReader {
     void getStatus(); 
     void initUsb(); // Inits the USB Stick
     void openFile(char* name, bool read, bool replace_current=true); // Open a file 
+    void openLogFile(char* name);
     void pauseUSBPrint();
     void printingHasFinished();
     void release();
     void removeFile(char* name);
     void startFileprint();
+    void write_command(char *buf);
 
     FORCE_INLINE bool isFileOpen() {return file.isOpen(); }
     FORCE_INLINE int16_t get() {usbpos = file.curPosition(); return (int16_t)file.read();}
@@ -41,7 +43,7 @@ class UsbReader {
     
 
   public:
-    bool saving, usbOK, usbprinting;
+    bool logging, saving, usbOK, usbprinting;
     //char filename[FILENAME_LENGTH];
     int autostart_index;
   private:

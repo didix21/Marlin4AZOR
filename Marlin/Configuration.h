@@ -690,7 +690,7 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 #define ABS_PREHEAT_FAN_SPEED 0   // Insert Value between 0 and 255
 
 //==============================LCD and SD support=============================
-// @section lcd
+// @section lcd and sd
 
 // Define your display language below. Replace (en) with your language code and uncomment.
 // en, pl, fr, de, es, ru, bg, it, pt, pt-br, fi, an, nl, ca, eu, kana, kana_utf8, cn, test
@@ -719,7 +719,7 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
                                                // 0 to disable buzzer feedback 
 
 //==============================USB support=============================
-// @section lcd                                                
+// @section usb                                              
                                                
 // USB STICK
 // USB Stick support is disable by default. If your controller has an USB slot,

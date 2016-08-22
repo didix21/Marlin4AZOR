@@ -90,7 +90,7 @@
 #endif
 
 //Changed Heaters
-#define HEATER_0_PIN       40 // EXTRUDER 1 //Done
+#define HEATER_0_PIN       40 // EXTRUDER 1 
 #define HEATER_1_PIN       38 // EXTRUDER 2
 #define HEATER_2_PIN       -1
 
