@@ -32,8 +32,11 @@ class UsbReader {
     void removeFile(char* name);
     void startFileprint();
 
+    FORCE_INLINE bool isFileOpen() {return file.isOpen(); }
     FORCE_INLINE int16_t get() {usbpos = file.curPosition(); return (int16_t)file.read();}
+    FORCE_INLINE uint8_t percentDone() {return (isFileOpen() && filesize) ? usbpos / ((filesize + 99) / 100) : 0; }
     FORCE_INLINE void setIndex(long index) {usbpos = index; file.seekSet(index);}
+    
 
   public:
     bool saving, usbOK, usbprinting;
@@ -74,11 +77,11 @@ class UsbReader {
     uint32_t filesize;
     uint32_t filespos[USB_PROCEDURE_DEPTH];
     uint32_t usbpos;
-    
-
-    
-    
+        
 };
+  extern UsbReader usbStick;
+
+  #define IS_USB_PRINTING (usbStick.usbprinting);
 
 
 

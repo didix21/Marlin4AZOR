@@ -6873,7 +6873,7 @@ void idle() {
 void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
   
   #if HAS_FILRUNOUT
-    if (IS_SD_PRINTING && !(READ(FILRUNOUT_PIN) ^ FIL_RUNOUT_INVERTING))
+    if ((IS_USB_PRINTING || IS_SD_PRINTING) && !(READ(FILRUNOUT_PIN) ^ FIL_RUNOUT_INVERTING)) /* IS_USB_PRINTING Added by didix21 */
       filrunout();
   #endif
 
