@@ -83,7 +83,7 @@ class UsbReader {
 };
   extern UsbReader usbStick;
 
-  #define IS_USB_PRINTING (usbStick.usbprinting);
+  #define IS_USB_PRINTING (usbStick.usbprinting)
 
 
 

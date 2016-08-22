@@ -4943,12 +4943,21 @@ inline void gcode_M408() {
     #ifdef SDSUPPORT
       if (!movesplanned() && !IS_SD_PRINTING) SERIAL_PROTOCOLPGM("I"); // IDLING
       else if (IS_SD_PRINTING) SERIAL_PROTOCOLPGM("P");                // SD PRINTING
-      else SERIAL_PROTOCOLPGM("B");                                                // SOMETHING ELSE, BUT SOMETHIG
+      else SERIAL_PROTOCOLPGM("B");                                    // SOMETHING ELSE, BUT SOMETHIG
     #else
       if (!movesplanned()) SERIAL_PROTOCOLPGM("I");   // IDLING
       else SERIAL_PROTOCOLPGM("B");                   // SOMETHING ELSE, BUT SOMETHIG
     #endif
-
+/******************************************* Added by didix21 *******************************************/
+    #ifdef USBSUPPORT
+      if(!movesplanned() && !IS_USB_PRINTING) SERIAL_PROTOCOLPGM("I"); // IDLING
+      else if (IS_USB_PRINTING) SERIAL_PROTOCOLPGM("P");               // USB PRINTING
+      else SERIAL_PROTOCOLPGM("B");                                    // SOMETHING ELSE, BUT SOMETHING
+    #else
+      if (!movesplanned()) SERIAL_PROTOCOLPGM("I");   // IDLING
+      else SERIAL_PROTOCOLPGM("B");                   // SOMETHING ELSE, BUT SOMETHIG      
+    #endif
+/********************************************************************************************************/
     // ","homed":[0, 0, 0]
     SERIAL_PROTOCOLPGM("\",\"homed\":[");
     SERIAL_PROTOCOLPGM(axis_known_position[X_AXIS] ? "1," : "0,");
