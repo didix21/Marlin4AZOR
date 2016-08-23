@@ -17,6 +17,7 @@ class UsbReader {
     /**
      * Main Class Functions
      */
+    bool chdir(const char* relpath);
     bool eof();   
     bool isSomeDeviceConnected (USB *usbDevice);
 
@@ -27,12 +28,14 @@ class UsbReader {
     void getAbsFilename(char *t);
     void getStatus(); 
     void initUsb(); // Inits the USB Stick
+    void ls(print_t* pr);
     void openFile(char* name, bool read, bool replace_current=true); // Open a file 
     void openLogFile(char* name);
     void pauseUSBPrint();
     void printingHasFinished();
     void release();
     void removeFile(char* name);
+    void setroot();
     void startFileprint();
     void write_command(char *buf);
 
@@ -46,17 +49,7 @@ class UsbReader {
     bool logging, saving, usbOK, usbprinting;
     //char filename[FILENAME_LENGTH];
     int autostart_index;
-  private:
-    /** 
-     * USB Classes  
-     */
-    USB usb;
-    FatFile file, root, *curDir;
-    FatFile fatFile;
-    BulkOnly bulk;
-    UsbFat key;
-    ios iosFile;
-
+  private:  
     /**
      * DEFINES
      */
@@ -64,6 +57,17 @@ class UsbReader {
     #define FILENAME_LENGTH       13
     #define MAX_DIR_DEPTH         10 // Maximum folder depth
     #define MAXPATHNAMELENGTH     (FILENAME_LENGTH*MAX_DIR_DEPTH + MAX_DIR_DEPTH + 1)
+    
+    /** 
+     * USB Classes  
+     */
+    USB usb;
+    FatFile file, root, *curDir, workDir, workDirParents[MAX_DIR_DEPTH];
+    FatFile fatFile;
+    BulkOnly bulk;
+    UsbFat key;
+    ios iosFile;
+
     
     /** 
      * USB Variables  
@@ -77,6 +81,8 @@ class UsbReader {
     
     uint8_t file_subcall_ctr; 
     uint8_t usbState, usbLastSate;
+
+    uint16_t workDirDepth;
 
     uint32_t filesize;
     uint32_t filespos[USB_PROCEDURE_DEPTH];

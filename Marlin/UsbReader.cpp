@@ -22,6 +22,29 @@ UsbReader::UsbReader():bulk(&usb),key(&bulk) { // Quick Initialitzation of const
   next_autostart_ms = millis() + 5000;
 }
 
+bool UsbReader::chdir(const char *relpath) {
+  FatFile newfile;
+  FatFile *parent = &root;
+
+  if (workDir.isOpen()) parent = &workDir;
+
+  if(!newfile.open( parent, relpath, O_READ)) {
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPGM(MSG_USB_CANT_ENTER_SUBDIR);
+    SERIAL_ECHOLN(relpath);
+    return false;
+  }
+  else {
+    if(workDirDepth < MAX_DIR_DEPTH) {
+      ++workDirDepth;
+      for (int d = workDirDepth; d--;) workDirParents[d + 1] = workDirParents[d];
+      workDirParents[0] = *parent;
+    }
+    workDir = newfile;
+  }
+  return true;
+}
+
 bool UsbReader::eof() { //End of file
  return iosFile.eof();
 }
@@ -120,16 +143,27 @@ void UsbReader::getStatus() {
 
 void UsbReader::initUsb() { //Inits USB
   usbOK = false;
-  if(!isSomeDeviceConnected(&usb)) {
+  if(root.isOpen()) root.close();
+  
+  if(!initUSB(&usb)) {
+     SERIAL_ECHO_START;
      SERIAL_ECHOLNPGM(MSG_USB_INIT_FAIL);
   }
   else if(!key.begin()) { 
+    SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM(MSG_USB_VOL_INIT_FAIL);
   }
   else {
      usbOK = true;
+     SERIAL_ECHO_START;
      SERIAL_ECHOLNPGM(MSG_USB_STICK_OK);
   }      
+  workDir = root;
+  curDir = &root;
+}
+
+void UsbReader::ls(print_t* pr) {
+  file.ls(pr,0);
 }
 
 void UsbReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
@@ -237,6 +271,11 @@ void UsbReader::removeFile(char *name) {
 
   file.remove(curDir, fname);
   
+}
+
+void UsbReader::setroot() {
+  workDir = root;
+  curDir = &workDir;
 }
 
 void UsbReader::startFileprint() {

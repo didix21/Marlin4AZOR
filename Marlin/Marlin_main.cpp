@@ -3073,8 +3073,13 @@ inline void gcode_M17() {
    * M20: List SD card and USB Stick to serial output
    */
   inline void gcode_M20() {
-    #ifdef SDSUPPORT
-      card.setroot();
+    #if (defined(SDSUPPORT) || defined(USBSUPPORT))
+      #ifdef SDSUPPORT
+          card.setroot();
+      #endif
+      #ifdef USBSUPPORT
+          usbStick.setroot();
+      #endif
       if (code_seen('P')) {
         
         ++current_command_args;
@@ -3083,14 +3088,24 @@ inline void gcode_M17() {
           String dir = "";
           for (int i = 0; i < strlen(current_command_args); ++i) {
             if (current_command_args[i] == '/') {
-              if (!card.chdir(dir.c_str())) return;
+              #ifdef SDSUPPORT
+                if (!card.chdir(dir.c_str())) return;
+              #endif
+              #ifdef USBSUPPORT
+                if (!usbStick.chdir(dir.c_str())) return;
+              #endif
               dir = "";
             } else {
               dir += current_command_args[i];
             }
           }
           if (dir.length() > 0) {
-            if (!card.chdir(dir.c_str())) return;
+            #ifdef SDSUPPORT
+              if (!card.chdir(dir.c_str())) return;
+            #endif
+            #ifdef USBSUPPORT
+              if (!usbStick.chdir(dir.c_str())) return;
+            #endif
           }
         }
       }
@@ -3099,16 +3114,17 @@ inline void gcode_M17() {
       SERIAL_PROTOCOL(current_command_args);
       SERIAL_PROTOCOL("\",\"files\":[");
       
-      card.ls(true);
+      #ifdef SDSUPPORT
+          card.ls(true);
+      #endif
+     
+
+      #ifdef USBSUPPORT
+          usbStick.ls(&MYSERIAL);
+      #endif
   
       SERIAL_PROTOCOLLN("]}");
-    #endif //SDSUPPORT
-
-    #ifdef USBSUPPORT
-//      MYSERIAL.println();
-//      key.ls(&MYSERIAL, LS_A | LS_R);
-//      MYSERIAL.println();
-    #endif
+    #endif //SDSUPPORT or USBSUPPORT
     
   }
 
