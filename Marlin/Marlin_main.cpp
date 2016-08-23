@@ -635,6 +635,8 @@ void setup() {
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
 
+  analogWrite(FAN1_PIN,255);
+
   // Check startup - does nothing if bootloader sets MCUSR to 0
   byte mcu = MCUSR;
   if (mcu & 1) SERIAL_ECHOLNPGM(MSG_POWERUP);
@@ -2846,7 +2848,7 @@ inline void gcode_G28() {
   
       st_synchronize();
       plan_bed_level_matrix.set_to_identity();
-      plan_buffer_line(X_current, Y_current, Z_start_location, E_current, homing_feedrate[Z_AXIS] / 60, active_extruder);
+      plan_buffer_line(X_current, Y_current, Z_start_location, E_current, homing_feedrate[Z_AXIS], active_extruder);
       st_synchronize();
   
       //
@@ -2856,7 +2858,7 @@ inline void gcode_G28() {
       //
       plan_buffer_line( X_probe_location, Y_probe_location, Z_start_location,
           E_current,
-          homing_feedrate[X_AXIS]/60,
+          homing_feedrate[X_AXIS],
           active_extruder);
       st_synchronize();
   
@@ -2874,7 +2876,7 @@ inline void gcode_G28() {
   
       SERIAL_PROTOCOLPGM("{\"probe\":");
       SERIAL_PROTOCOL_F(measured_z, 6);
-      SERIAL_PROTOCOLLN("}");
+      SERIAL_PROTOCOLLN("}**");
   }
 
   /*
@@ -3642,6 +3644,7 @@ inline void gcode_M109() {
         #else
           SERIAL_EOL;
         #endif
+        //gcode_M408();
         temp_ms = millis();
       }
 
@@ -3695,10 +3698,54 @@ inline void gcode_M109() {
         SERIAL_PROTOCOLPGM(" B:");
         SERIAL_PROTOCOL_F(degBed(), 1);
         SERIAL_EOL;
+
+        /*SERIAL_PROTOCOLPGM("{\"heaters\": [");
+        SERIAL_PROTOCOL_F(degBed(), 1);
+        for (int8_t e = 0; e < EXTRUDERS; ++e) {
+          SERIAL_PROTOCOLPGM(",");
+          SERIAL_PROTOCOL_F(degHotend(e), 1);
+        }
+        SERIAL_PROTOCOLPGM("]");
+
+        SERIAL_PROTOCOLPGM(",\"hstat\":[");
+        SERIAL_PROTOCOLPGM(degTargetBed() > degBed() ? "2" : "1");
+        for (int8_t e = 0; e < EXTRUDERS; ++e) {
+          SERIAL_PROTOCOLPGM(",");
+          SERIAL_PROTOCOLPGM(degTargetHotend(e) > EXTRUDER_AUTO_FAN_TEMPERATURE ? "2" : "1");
+        }
+        SERIAL_PROTOCOLPGM("]}");
+        SERIAL_EOL;*/
+        //gcode_M408();
       }
       idle();
     }
-    LCD_MESSAGEPGM(MSG_BED_DONE);
+
+    float tt = degHotend(active_extruder);
+    SERIAL_PROTOCOLPGM("T:");
+    SERIAL_PROTOCOL(tt);
+    SERIAL_PROTOCOLPGM(" E:");
+    SERIAL_PROTOCOL((int)active_extruder);
+    SERIAL_PROTOCOLPGM(" B:");
+    SERIAL_PROTOCOL_F(degBed(), 1);
+    SERIAL_EOL;
+
+    SERIAL_PROTOCOLPGM("{\"heaters\": [");
+    SERIAL_PROTOCOL_F(degBed(), 1);
+    for (int8_t e = 0; e < EXTRUDERS; ++e) {
+      SERIAL_PROTOCOLPGM(",");
+      SERIAL_PROTOCOL_F(degHotend(e), 1);
+    }
+    SERIAL_PROTOCOLPGM("]");
+
+    SERIAL_PROTOCOLPGM(",\"hstat\":[");
+    SERIAL_PROTOCOLPGM(degTargetBed() > degBed() ? "2" : "1");
+    for (int8_t e = 0; e < EXTRUDERS; ++e) {
+      SERIAL_PROTOCOLPGM(",");
+      SERIAL_PROTOCOLPGM(degTargetHotend(e) > EXTRUDER_AUTO_FAN_TEMPERATURE ? "2" : "1");
+    }
+    SERIAL_PROTOCOLPGM("]}");
+    SERIAL_EOL;
+   
     refresh_cmd_timeout();
   }
 
@@ -4803,7 +4850,7 @@ inline void gcode_M408() {
       "pos": [-11.00, 0.00, 0.00], 
       "sfactor": 100.00, 
       "efactor": [100.00, 100.00], 
-      "tool": 1, //FET FINS AQUI
+      "tool": 1, 
       "probe": "535", 
       "fanPercent": [75.0, 0.0],
       "fanRPM": 0,
@@ -4868,7 +4915,7 @@ inline void gcode_M408() {
       SERIAL_PROTOCOLPGM(",\"hstat\":[");
       firstOccurrence = true;
       #if HAS_TEMP_BED
-        SERIAL_PROTOCOLPGM(degTargetBed() > 0 ? "2" : "1");
+        SERIAL_PROTOCOLPGM(degTargetBed() > degBed() ? "2" : "1");
         firstOccurrence = false;
       #endif
       for (int8_t e = 0; e < EXTRUDERS; ++e) {

@@ -37,7 +37,7 @@
 // where MCK = 84 MHz
 
 uint8_t const SPI_FULL_SPEED = 8;	// 10.5 MHz
-uint8_t const SPI_HALF_SPEED = 16;	//  5.25 MHz
+uint8_t const SPI_HALF_SPEED = 32;
 
 // slow speed for initialization
 uint8_t const SPI_INIT_SPEED = 240;	// 350 kHz
