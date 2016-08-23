@@ -5808,7 +5808,7 @@ void process_next_command() {
         gcode_M17();
         break;
 
-      #ifdef SDSUPPORT
+      #if defined(SDSUPPORT) || defined(USBSUPPORT)
         case 20: // M20 - list SD card
           gcode_M20(); break;
         case 21: // M21 - init SD card
@@ -5838,11 +5838,11 @@ void process_next_command() {
           case 33: //M33 - Get the long full path to a file or folder
             gcode_M33(); break;
         #endif // LONG_FILENAME_HOST_SUPPORT
-
-        case 928: //M928 - Start SD write
-          gcode_M928(); break;
-          
-      #endif // SDSUPPORT
+        #ifdef SDSUPPORT
+          case 928: //M928 - Start SD write
+            gcode_M928(); break;
+        #endif
+      #endif // SDSUPPORT || USBSUPPORT
 
       case 31: //M31 take time since the start of the SD print or an M109 command
         gcode_M31();
@@ -6262,6 +6262,9 @@ void ok_to_send() {
   refresh_cmd_timeout();
   #ifdef SDSUPPORT
     if (fromsd[cmd_queue_index_r]) return;
+  #endif
+  #ifdef USBSUPPORT
+    if(fromUsb[cmd_queue_index_r]) return;
   #endif
   SERIAL_PROTOCOLPGM(MSG_OK);
   #ifdef ADVANCED_OK
