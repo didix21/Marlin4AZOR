@@ -629,8 +629,9 @@ void setup() {
   #endif
 
   MYSERIAL.begin(BAUDRATE);
-  while(!MYSERIAL);
   
+  while(!MYSERIAL);
+  MYSERIAL.println("The Printer is Ready");
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
 
@@ -725,8 +726,9 @@ void setup() {
  *  - Call LCD update
  */
 
-
 void loop() {
+
+  
 
   if (commands_in_queue < BUFSIZE - 1) get_command();
   
@@ -3019,8 +3021,8 @@ inline void gcode_M17() {
   inline void gcode_M20() {
     
     card.setroot();
-    if (code_seen('P')) {
-      
+    
+    if (current_command_args[0] == 'P') {
       ++current_command_args;
       if (current_command_args[0] == '/') ++current_command_args;
       if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r') {
@@ -3046,6 +3048,7 @@ inline void gcode_M17() {
     SERIAL_PROTOCOL("\",\"files\":[");
     card.ls(true);
     SERIAL_PROTOCOLLN("]}**");
+    SERIAL_EOL;
   }
 
   /**

@@ -49,31 +49,45 @@ char *createFilename(char *buffer, const dir_t &p) { //buffer > 12characters
 void CardReader::lsDive(const char *prepend, SdFile parent, const char * const match/*=NULL*/) {
   dir_t p;
   uint8_t cnt = 0;
-  
+
   // Read the next entry from a directory
-  bool firstFile = true;
   while (parent.readDir(p, longFilename) > 0) {
 
     // If the entry is a directory and the action is LS_SerialPrint
-    if (lsAction != LS_Count && lsAction != LS_GetFilename) {
+    if (DIR_IS_SUBDIR(&p) && lsAction != LS_Count && lsAction != LS_GetFilename) {
 
-      if (!firstFile) SERIAL_PROTOCOL(',');
-      SERIAL_PROTOCOL('"');
-      if (DIR_IS_SUBDIR(&p)) SERIAL_PROTOCOL('*');
+      // Get the short name for the item, which we know is a folder
       char lfilename[FILENAME_LENGTH];
       createFilename(lfilename, p);
-      SERIAL_PROTOCOL(lfilename);
-      SERIAL_PROTOCOL('|');
-      
-      if (strlen(longFilename) > 0) {
-        SERIAL_PROTOCOL(longFilename);
-      } else {
-        SERIAL_PROTOCOL(lfilename);
+
+      // Allocate enough stack space for the full path to a folder, trailing slash, and nul
+      boolean prepend_is_empty = (prepend[0] == '\0');
+      int len = (prepend_is_empty ? 1 : strlen(prepend)) + strlen(lfilename) + 1 + 1;
+      char path[len];
+
+      // Append the FOLDERNAME12/ to the passed string.
+      // It contains the full path to the "parent" argument.
+      // We now have the full path to the item in this folder.
+      strcpy(path, prepend_is_empty ? "/" : prepend); // root slash if prepend is empty
+      strcat(path, lfilename); // FILENAME_LENGTH-1 characters maximum
+      strcat(path, "/");       // 1 character
+
+      // Serial.print(path);
+
+      // Get a new directory object using the full path
+      // and dive recursively into it.
+      SdFile dir;
+      if (!dir.open(parent, lfilename, O_READ)) {
+        if (lsAction == LS_SerialPrint) {
+          SERIAL_ECHO_START;
+          SERIAL_ECHOLN(MSG_SD_CANT_OPEN_SUBDIR);
+          SERIAL_ECHOLN(lfilename);
+        }
       }
-      SERIAL_PROTOCOL('"');
-      firstFile = false;
+      lsDive(path, dir);
       // close() is done automatically by destructor of SdFile
-    } else {
+    }
+    else {
       char pn0 = p.name[0];
       if (pn0 == DIR_NAME_FREE) break;
       if (pn0 == DIR_NAME_DELETED || pn0 == '.') continue;
@@ -89,6 +103,11 @@ void CardReader::lsDive(const char *prepend, SdFile parent, const char * const m
         case LS_Count:
           nrFiles++;
           break;
+        case LS_SerialPrint:
+          createFilename(filename, p);
+          SERIAL_PROTOCOL(prepend);
+          SERIAL_PROTOCOLLN(filename);
+          break;
         case LS_GetFilename:
           createFilename(filename, p);
           if (match != NULL) {
@@ -98,16 +117,37 @@ void CardReader::lsDive(const char *prepend, SdFile parent, const char * const m
           cnt++;
           break;
       }
+
     }
   } // while readDir
 }
 
 void CardReader::ls(bool currentDir /*=false*/)  {
-  lsAction = LS_SerialPrint;
-  SdFile *lsDir = currentDir ? &workDir : &root;
+  //lsAction = LS_SerialPrint;
+  //SdFile *lsDir = currentDir ? &workDir : &root;
+  curDir = &workDir;
+  
+  curDir->rewind();
+
+  dir_t p;
+  bool firstFile = true;
+  while (curDir->readDir(p, longFilename) > 0) {
+    if (!firstFile) SERIAL_PROTOCOL(',');
+    SERIAL_PROTOCOL('"');
+    if (DIR_IS_SUBDIR(&p)) SERIAL_PROTOCOL('*');
+    char lfilename[FILENAME_LENGTH];
+    createFilename(lfilename, p);
+    SERIAL_PROTOCOL(lfilename);
+    SERIAL_PROTOCOL('|');
     
-  lsDir->rewind();
-  lsDive("", *lsDir);
+    if (strlen(longFilename) > 0) {
+      SERIAL_PROTOCOL(longFilename);
+    } else {
+      SERIAL_PROTOCOL(lfilename);
+    }
+    SERIAL_PROTOCOL('"');
+    firstFile = false;
+  }
 }
 
 #ifdef LONG_FILENAME_HOST_SUPPORT
@@ -120,38 +160,38 @@ void CardReader::ls(bool currentDir /*=false*/)  {
 
     int i, pathLen = strlen(path);
 
-    // SERIAL_ECHOPGM("Full Path: "); SERIAL_ECHOLN(path);
+    //SERIAL_ECHOPGM("Full Path: "); SERIAL_ECHOLN(path);
 
     // Zero out slashes to make segments
     for (i = 0; i < pathLen; i++) if (path[i] == '/') path[i] = '\0';
 
     SdFile diveDir = root; // start from the root for segment 1
     for (i = 0; i < pathLen;) {
-
       if (path[i] == '\0') i++; // move past a single nul
 
       char *segment = &path[i]; // The segment after most slashes
 
       // If a segment is empty (extra-slash) then exit
-      if (!*segment) break;
+      if (!*segment)break;
 
       // Go to the next segment
       while (path[++i]) { }
 
-      // SERIAL_ECHOPGM("Looking for segment: "); SERIAL_ECHOLN(segment);
+      //SERIAL_ECHOPGM("Looking for segment: "); SERIAL_ECHOLN(segment);
 
       // Find the item, setting the long filename
+      longFilename[0] = '\0';
       diveDir.rewind();
       lsDive("", diveDir, segment);
 
       // Print /LongNamePart to serial output
       SERIAL_PROTOCOLCHAR('/');
-      SERIAL_PROTOCOL(longFilename[0] ? longFilename : path);
+      SERIAL_PROTOCOL(longFilename[0] ? longFilename : segment);
 
       // If the filename was printed then that's it
       if (!filenameIsDir) break;
 
-      // SERIAL_ECHOPGM("Opening dir: "); SERIAL_ECHOLN(segment);
+      //SERIAL_ECHOPGM("Opening dir: "); SERIAL_ECHOLN(segment);
 
       // Open the sub-item as the new dive parent
       SdFile dir;
@@ -162,7 +202,7 @@ void CardReader::ls(bool currentDir /*=false*/)  {
         SERIAL_ECHO(segment);
         break;
       }
-
+     
       diveDir.close();
       diveDir = dir;
 
@@ -218,6 +258,8 @@ void CardReader::setroot() {
   /*if (!workDir.openRoot(&volume)) {
     SERIAL_ECHOLNPGM(MSG_SD_WORKDIR_FAIL);
   }*/
+  workDirDepth = 0;
+  
   workDir = root;
   curDir = &workDir;
 }
@@ -396,7 +438,6 @@ void CardReader::removeFile(char* name) {
         if (!myDir.open(curDir, subdirname, O_READ)) {
           SERIAL_PROTOCOLPGM("open failed, File: ");
           SERIAL_PROTOCOL(subdirname);
-          SERIAL_PROTOCOLCHAR('.');
           return;
         }
         else {
