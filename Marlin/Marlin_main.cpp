@@ -236,11 +236,11 @@
 #ifdef SDSUPPORT
   CardReader card;
 #endif
-
+/**** Added by didix21 ****/
 #ifdef USBSUPPORT
   UsbReader usbStick;
 #endif
-
+/**************************/
 bool Running = true;
 
 uint8_t marlin_debug_flags = DEBUG_INFO|DEBUG_ERRORS;
@@ -464,6 +464,11 @@ void serial_echopair_P(const char *s_P, unsigned long v) { serialprintPGM(s_P); 
     }
   }
 #endif //!SDSUPPORT
+
+#ifdef USBSUPPORT
+  int freeMemory() {return usbStick::freeRam();}
+#endif
+
 #endif
 
 /**

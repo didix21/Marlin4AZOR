@@ -41,6 +41,7 @@ class UsbReader {
 
     FORCE_INLINE bool isFileOpen() {return file.isOpen(); }
     FORCE_INLINE int16_t get() {usbpos = file.curPosition(); return (int16_t)file.read();}
+    FORCE_INLINE int freeRam() {return FreeRam();}
     FORCE_INLINE uint8_t percentDone() {return (isFileOpen() && filesize) ? usbpos / ((filesize + 99) / 100) : 0; }
     FORCE_INLINE void setIndex(long index) {usbpos = index; file.seekSet(index);}
     
