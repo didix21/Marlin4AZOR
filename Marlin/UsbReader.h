@@ -9,6 +9,7 @@
 
 
 #include "Usb_Stick.h"
+enum LsAction {LS_SerialPrint, LS_Count, LS_GetFilename};
 
 class UsbReader {
 
@@ -26,6 +27,7 @@ class UsbReader {
     void checkAutoStart(bool x);
     void closeFile(bool store_location=false);
     void getAbsFilename(char *t);
+    void getFileName(uint16_t nr, const char* const mastch = NULL);
     void getStatus(); 
     void initUsb(); // Inits the USB Stick
     void ls(print_t* pr);
@@ -77,6 +79,8 @@ class UsbReader {
    
     char filenames[USB_PROCEDURE_DEPTH][MAXPATHNAMELENGTH];
 
+    LsAction lsAction;
+    
     unsigned long next_autostart_ms;
     size_t namesize;
     
@@ -84,6 +88,7 @@ class UsbReader {
     uint8_t usbState, usbLastSate;
 
     uint16_t workDirDepth;
+    uint16_t nrFiles;
 
     uint32_t filesize;
     uint32_t filespos[USB_PROCEDURE_DEPTH];

@@ -713,7 +713,7 @@ void setup() {
 
   SERIAL_ECHO_START;
   SERIAL_ECHOPGM(MSG_FREE_MEMORY);
-  SERIAL_ECHO(freeMemory());
+  SERIAL_ECHO(freeMemory()); 
   SERIAL_ECHOPGM(MSG_PLANNER_BUFFER_BYTES);
   SERIAL_ECHOLN((int)sizeof(block_t)*BLOCK_BUFFER_SIZE);
 
@@ -1083,7 +1083,6 @@ void get_command() {
           sprintf_P(timeUSB, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
           SERIAL_ECHO_START;
           SERIAL_ECHOLN(timeUSB);
-         // lcd_setstatus(timeUSB, true);
           usbStick.printingHasFinished();
           usbStick.checkAutoStart(true);
         }
@@ -1094,11 +1093,11 @@ void get_command() {
           return; //if empty line
         }
         command_queue[cmd_queue_index_w][serial_count] = 0; //terminate string
-        // if (!comment_mode) { /* no descomentar */
+        // if (!comment_mode) { // Commented by default
         fromUsb[cmd_queue_index_w] = true; /* fromUsb created by didix21 */
         commands_in_queue += 1;
         cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
-        // } /* no descomentar */
+        // } 
         comment_mode = false; //for new command
         serial_count = 0; //clear buffer
       }
@@ -3158,7 +3157,7 @@ inline void gcode_M17() {
   }
 
   /**
-   * M22: Release SD Card
+   * M22: Release SD Card and USB Stick
    */
   inline void gcode_M22() {
     #ifdef SDSUPPORT
@@ -3183,7 +3182,7 @@ inline void gcode_M17() {
   }
 
   /**
-   * M24: Start SD Print
+   * M24: Start SD or USB print
    */
   inline void gcode_M24() {
      #ifdef SDSUPPORT
@@ -3198,7 +3197,7 @@ inline void gcode_M17() {
   }
 
   /**
-   * M25: Pause SD Print
+   * M25: Pause SD Print and USB Stick
    */
   inline void gcode_M25() {
     #ifdef SDSUPPORT
@@ -3211,16 +3210,20 @@ inline void gcode_M17() {
   }
 
   /**
-   * M26: Set SD Card file index
+   * M26: Set SD Card and USB Stick file index
    */
   inline void gcode_M26() {
     #ifdef SDSUPPORT
       if (card.cardOK && code_seen('S')) card.setIndex(code_value_short());
     #endif
+
+    #ifdef USBSUPPORT
+      if(usbStick.usbOK && code_seen('S')) usbStick.setIndex(code_value_short());
+    #endif
   }
 
   /**
-   * M27: Get SD Card status
+   * M27: Get SD Card and USB Stick status
    */
   inline void gcode_M27() {
     #ifdef SDSUPPORT

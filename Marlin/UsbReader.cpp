@@ -128,6 +128,14 @@ void UsbReader::getAbsFilename(char *t){
 //  else
 //    t[0] = 0;
 }
+
+void UsbReader::getFileName(uint16_t nr, const char * const match/*=NULL*/) {
+  curDir = &workDir;
+  lsAction = LS_GetFilename;
+  nrFiles = nr;
+  curDir->rewind();
+  //lsDive("", *curDir, match); /* Falta Implementar */
+}
  
 void UsbReader::getStatus() {
   if(usbOK) {
@@ -181,7 +189,7 @@ void UsbReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
       SERIAL_ECHO_START;
       SERIAL_ECHOPGM("SUBROUTINE CALL target:\"");
       SERIAL_ECHO(name);
-      SERIAL_ECHOPGM("\" PARENT:\"");
+      SERIAL_ECHOPGM("\" parent:\"");
 
       //store current filename and position
       getAbsFilename(filenames[file_subcall_ctr]); // code not implemented yet
@@ -205,11 +213,77 @@ void UsbReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
     SERIAL_ECHOPGM("Now fresh file: ");
     SERIAL_ECHOLN(name);
   }
-  
   usbprinting = false;
+
+  FatFile myDir;
   curDir = &root;
   char *fname = name;
+
+  
   char *dirname_start , *dirname_end;
+
+  if(name[0] == '/') {
+    dirname_start = &name[1];
+    while (dirname_start > 0) {
+      dirname_end = strchr(dirname_start, '/');
+      
+      
+      if (dirname_end > 0 && dirname_end > dirname_start) {
+        char subdirname[FILENAME_LENGTH];
+        strncpy(subdirname, dirname_start, dirname_end - dirname_start);
+        subdirname[dirname_end - dirname_start] = 0;
+        SERIAL_ECHOLN(subdirname);
+        if (!myDir.open(curDir, subdirname, O_READ)) {
+          SERIAL_PROTOCOLPGM(MSG_USB_OPEN_FILE_FAIL);
+          SERIAL_PROTOCOL(subdirname);
+          SERIAL_PROTOCOLCHAR('.');
+          return;
+        }
+  
+        curDir = &myDir;
+        dirname_start = dirname_end + 1;
+      }
+      else {
+        fname = dirname_start;
+        break;
+      }
+    }
+  }
+  else { //relative path
+    curDir = &workDir;
+  }
+
+  if(read) {
+    if(file.open(curDir, fname, O_READ)) {
+      filesize = file.fileSize();
+      SERIAL_PROTOCOLPGM(MSG_USB_FILE_OPENED);
+      SERIAL_PROTOCOL(fname);
+      SERIAL_PROTOCOLPGM(MSG_SD_SIZE);
+      SERIAL_PROTOCOLLN(filesize);
+      usbpos = 0;
+
+      SERIAL_PROTOCOLLNPGM(MSG_USB_FILE_SELECTED);
+      getFileName(0, fname);
+    }
+    else {
+      SERIAL_PROTOCOLPGM(MSG_USB_OPEN_FILE_FAIL);
+      SERIAL_PROTOCOL(fname);
+      SERIAL_PROTOCOLPGM(".\n");
+    }
+  } 
+  else { //write
+    if(!file.open(curDir, fname, O_CREAT | O_APPEND | O_WRITE | O_TRUNC)) {
+      SERIAL_PROTOCOLPGM(MSG_USB_OPEN_FILE_FAIL);
+      SERIAL_PROTOCOL(fname);
+      SERIAL_PROTOCOLPGM(".\n");
+    }
+    else {
+      saving = true;
+      SERIAL_PROTOCOLPGM(MSG_USB_WRITE_TO_FILE);
+      SERIAL_PROTOCOLLN(name);
+    }
+  }
+  
   if(file.open(curDir, fname, O_READ)){
      filesize = file.fileSize();
      SERIAL_PROTOCOLPGM(MSG_USB_FILE_OPENED);
