@@ -3645,7 +3645,24 @@ inline void gcode_M109() {
         #else
           SERIAL_EOL;
         #endif
-        //gcode_M408();
+
+        SERIAL_PROTOCOLPGM("{\"heaters\": [");
+        SERIAL_PROTOCOL_F(degBed(), 1);
+        for (int8_t e = 0; e < EXTRUDERS; ++e) {
+          SERIAL_PROTOCOLPGM(",");
+          SERIAL_PROTOCOL_F(degHotend(e), 1);
+        }
+        SERIAL_PROTOCOLPGM("]");
+
+        SERIAL_PROTOCOLPGM(",\"hstat\":[");
+        SERIAL_PROTOCOLPGM(degTargetBed() > degBed() ? "2" : "1");
+        for (int8_t e = 0; e < EXTRUDERS; ++e) {
+          SERIAL_PROTOCOLPGM(",");
+          SERIAL_PROTOCOLPGM(degTargetHotend(e) > degHotend(e) ? "2" : "1");
+        }
+        SERIAL_PROTOCOLPGM("]}");
+        SERIAL_EOL;
+        
         temp_ms = millis();
       }
 
@@ -3662,7 +3679,40 @@ inline void gcode_M109() {
         }
       #endif //TEMP_RESIDENCY_TIME
     }
+  SERIAL_PROTOCOLPGM("T:");
+  SERIAL_PROTOCOL_F(degHotend(target_extruder),1);
+  SERIAL_PROTOCOLPGM(" E:");
+  SERIAL_PROTOCOL((int)target_extruder);
+  #ifdef TEMP_RESIDENCY_TIME
+    SERIAL_PROTOCOLPGM(" W:");
+    if (residency_start_ms > -1) {
+      temp_ms = ((TEMP_RESIDENCY_TIME * 1000UL) - (millis() - residency_start_ms)) / 1000UL;
+      SERIAL_PROTOCOLLN(temp_ms);
+    }
+    else {
+      SERIAL_PROTOCOLLNPGM("?");
+    }
+  #else
+    SERIAL_EOL;
+  #endif
 
+  SERIAL_PROTOCOLPGM("{\"heaters\": [");
+  SERIAL_PROTOCOL_F(degBed(), 1);
+  for (int8_t e = 0; e < EXTRUDERS; ++e) {
+    SERIAL_PROTOCOLPGM(",");
+    SERIAL_PROTOCOL_F(degHotend(e), 1);
+  }
+  SERIAL_PROTOCOLPGM("]");
+
+  SERIAL_PROTOCOLPGM(",\"hstat\":[");
+  SERIAL_PROTOCOLPGM(degTargetBed() > degBed() ? "2" : "1");
+  for (int8_t e = 0; e < EXTRUDERS; ++e) {
+    SERIAL_PROTOCOLPGM(",");
+    SERIAL_PROTOCOLPGM(degTargetHotend(e) > degHotend(e) ? "2" : "1");
+  }
+  SERIAL_PROTOCOLPGM("]}");
+  SERIAL_EOL;
+      
   LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
   refresh_cmd_timeout();
   print_job_start_ms = previous_cmd_ms;
@@ -3700,7 +3750,7 @@ inline void gcode_M109() {
         SERIAL_PROTOCOL_F(degBed(), 1);
         SERIAL_EOL;
 
-        /*SERIAL_PROTOCOLPGM("{\"heaters\": [");
+        SERIAL_PROTOCOLPGM("{\"heaters\": [");
         SERIAL_PROTOCOL_F(degBed(), 1);
         for (int8_t e = 0; e < EXTRUDERS; ++e) {
           SERIAL_PROTOCOLPGM(",");
@@ -3712,10 +3762,11 @@ inline void gcode_M109() {
         SERIAL_PROTOCOLPGM(degTargetBed() > degBed() ? "2" : "1");
         for (int8_t e = 0; e < EXTRUDERS; ++e) {
           SERIAL_PROTOCOLPGM(",");
-          SERIAL_PROTOCOLPGM(degTargetHotend(e) > EXTRUDER_AUTO_FAN_TEMPERATURE ? "2" : "1");
+          SERIAL_PROTOCOLPGM(degTargetHotend(e) > degHotend(e) ? "2" : "1");
         }
         SERIAL_PROTOCOLPGM("]}");
-        SERIAL_EOL;*/
+        SERIAL_EOL;
+        
         //gcode_M408();
       }
       idle();
@@ -3742,7 +3793,7 @@ inline void gcode_M109() {
     SERIAL_PROTOCOLPGM(degTargetBed() > degBed() ? "2" : "1");
     for (int8_t e = 0; e < EXTRUDERS; ++e) {
       SERIAL_PROTOCOLPGM(",");
-      SERIAL_PROTOCOLPGM(degTargetHotend(e) > EXTRUDER_AUTO_FAN_TEMPERATURE ? "2" : "1");
+      SERIAL_PROTOCOLPGM(degTargetHotend(e) > degHotend(e) ? "2" : "1");
     }
     SERIAL_PROTOCOLPGM("]}");
     SERIAL_EOL;
@@ -4930,7 +4981,7 @@ inline void gcode_M408() {
       #endif
       for (int8_t e = 0; e < EXTRUDERS; ++e) {
         if (!firstOccurrence) SERIAL_PROTOCOLPGM(",");
-        SERIAL_PROTOCOLPGM(degTargetHotend(e) > EXTRUDER_AUTO_FAN_TEMPERATURE ? "2" : "1");
+        SERIAL_PROTOCOLPGM(degTargetHotend(e) > degHotend(e) ? "2" : "1");
         firstOccurrence = false;
       }
       SERIAL_PROTOCOLPGM("]");
