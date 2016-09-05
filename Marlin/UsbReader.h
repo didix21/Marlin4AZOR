@@ -9,7 +9,12 @@
 
 
 #include "Usb_Stick.h"
+
+#define FILENAME_LENGTH 13
+
 enum LsAction {LS_SerialPrint, LS_Count, LS_GetFilename};
+
+
 
 class UsbReader {
 
@@ -31,6 +36,8 @@ class UsbReader {
     void getStatus(); 
     void initUsb(); // Inits the USB Stick
     void ls(print_t* pr);
+   
+    
     void openFile(char* name, bool read, bool replace_current=true); // Open a file 
     void openLogFile(char* name);
     void pauseUSBPrint();
@@ -49,8 +56,8 @@ class UsbReader {
     
 
   public:
-    bool logging, saving, usbOK, usbprinting;
-    //char filename[FILENAME_LENGTH];
+    bool logging, filenameIsDir, saving, usbOK, usbprinting;
+    char filename[FILENAME_LENGTH];
     int autostart_index;
   private:  
     /**
@@ -71,6 +78,10 @@ class UsbReader {
     UsbFat key;
     ios iosFile;
 
+    /**
+     * USB Classes Created by didix21
+     */
+    void lsDive(const char *prepend, FatFile parent, const char * const match=NULL);
     
     /** 
      * USB Variables  
@@ -98,7 +109,7 @@ class UsbReader {
   extern UsbReader usbStick;
 
   #define IS_USB_PRINTING (usbStick.usbprinting)
-
+ 
 
 
 #endif //USBSUPPORT

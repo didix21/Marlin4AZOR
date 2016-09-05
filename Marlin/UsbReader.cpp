@@ -22,6 +22,17 @@ UsbReader::UsbReader():bulk(&usb),key(&bulk) { // Quick Initialitzation of const
   next_autostart_ms = millis() + 5000;
 }
 
+char *createFilename(char *buffer, const dir_t &p) { // buffer > 12characters
+  char *pos = buffer;
+  for (uint8_t i = 0; i < 11; i++) {
+    if (p.name[i] == ' ') continue;
+    if (i == 8) *pos++ = '.';
+    *pos++ = p.name[i];
+  }
+   *pos++ = 0;
+   return buffer;
+}
+
 bool UsbReader::chdir(const char *relpath) {
   FatFile newfile;
   FatFile *parent = &root;
@@ -120,11 +131,11 @@ void UsbReader::getAbsFilename(char *t){
 //  uint8_t cnt = 0;
 //  *t = '/'; t++; cnt++;
 //  for (uint8_t i = 0; i < workDirDepth; i++) {
-//    workDirParents[i].getFilename(t); //SDBaseFile.getfilename!
+//    workDirParents[i].getFileName(t); //SDBaseFile.getfilename!
 //    while(*t && cnt < MAXPATHNAMELENGTH) { t++; cnt++; } //crawl counter forward.
 //  }
 //  if (cnt < MAXPATHNAMELENGTH - FILENAME_LENGTH)
-//    file.getFilename(t);
+//    file.getFileName(t);
 //  else
 //    t[0] = 0;
 }
@@ -134,7 +145,7 @@ void UsbReader::getFileName(uint16_t nr, const char * const match/*=NULL*/) {
   lsAction = LS_GetFilename;
   nrFiles = nr;
   curDir->rewind();
-  //lsDive("", *curDir, match); /* Falta Implementar */
+  lsDive("", *curDir, match); /* Falta Implementar */
 }
  
 void UsbReader::getStatus() {
@@ -172,6 +183,79 @@ void UsbReader::initUsb() { //Inits USB
 
 void UsbReader::ls(print_t* pr) {
   file.ls(pr,0);
+}
+
+void UsbReader::lsDive(const char *prepend, FatFile parent, const char* const match/*=NULL*/) {
+  dir_t p;
+  uint8_t cnt =0;
+
+  // Read the next entry from a directory
+  while (parent.readDir(&p) > 0) {
+
+    // If the entry is a directory and the action is LS_SerialPrint
+    if(DIR_IS_SUBDIR(&p) && lsAction != LS_Count && lsAction != LS_GetFilename) {
+      // Get the short name for the item, which we know is a folder
+      char lfilename[FILENAME_LENGTH];
+      createFilename(lfilename, p);
+
+      // Allocate enough stack space for the full path to a folder, trailing slash, and nul
+      boolean prepend_is_empty = (prepend[0] == '\0');
+      int len = (prepend_is_empty ? 1 : strlen(prepend)) + strlen(lfilename) + 1 + 1;
+      char path[len];
+
+      // Append the FOLDERNAME12/ to the passed string.
+      // It conains the full path to the "parent" argument.
+      // We now have the full path to the item in this folder.
+      strcpy(path, prepend_is_empty ? "/" : prepend); // root  slash if prepend is empty
+      strcat(path, lfilename); // FILENAME_LENGTH-1 characters maximum
+      strcat(path, "/");       // 1 character
+
+      // Get a new directory object using the full path
+      // and dive recursively into it
+      FatFile dir;
+      if (!dir.open(&parent, lfilename, O_READ)) {
+        if (lsAction == LS_SerialPrint) {
+          SERIAL_ECHO_START;
+          SERIAL_ECHOLN(MSG_USB_CANT_OPEN_SUBDIR);
+          SERIAL_ECHOLN(lfilename);
+        }
+      }
+      lsDive(path, dir);
+      // close() is done automatically by destructor of FatFilee
+    }
+    else {
+      char pn0 = p.name[0];
+      if (pn0 == DIR_NAME_FREE) break;
+      if (pn0 == DIR_NAME_DELETED || pn0 == '.') continue;
+      //if (longFilename[0] == '.') continue;
+
+      if(!DIR_IS_FILE_OR_SUBDIR(&p)) continue;
+
+      filenameIsDir = DIR_IS_SUBDIR(&p);
+
+      if(!filenameIsDir && (p.name[8] != 'G' || p.name[9] == '~')) continue;
+
+      switch (lsAction) {
+        case LS_Count:
+          nrFiles++;
+          break;
+        case LS_SerialPrint:
+          createFilename(filename, p);
+          SERIAL_PROTOCOL(prepend);
+          SERIAL_PROTOCOLLN(filename);
+          break;
+        case LS_GetFilename:
+          createFilename(filename, p);
+          if (match != NULL) {
+            if (strcasecmp(match, filename) == 0) return;
+          }
+          else if (cnt == nrFiles) return;
+          cnt++;
+          break;
+      }
+      
+    }
+  } // while readDir  
 }
 
 void UsbReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
@@ -243,7 +327,7 @@ void UsbReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
         curDir = &myDir;
         dirname_start = dirname_end + 1;
       }
-      else {
+      else {  // the remainder after all /fsa/fdsa/ is the filename
         fname = dirname_start;
         break;
       }
@@ -258,7 +342,7 @@ void UsbReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
       filesize = file.fileSize();
       SERIAL_PROTOCOLPGM(MSG_USB_FILE_OPENED);
       SERIAL_PROTOCOL(fname);
-      SERIAL_PROTOCOLPGM(MSG_SD_SIZE);
+      SERIAL_PROTOCOLPGM(MSG_USB_SIZE);
       SERIAL_PROTOCOLLN(filesize);
       usbpos = 0;
 
@@ -284,21 +368,6 @@ void UsbReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
     }
   }
   
-  if(file.open(curDir, fname, O_READ)){
-     filesize = file.fileSize();
-     SERIAL_PROTOCOLPGM(MSG_USB_FILE_OPENED);
-     SERIAL_PROTOCOL(fname);
-     SERIAL_PROTOCOLPGM(MSG_USB_SIZE);
-     SERIAL_PROTOCOLLN(filesize);
-  
-     SERIAL_PROTOCOLLNPGM(MSG_USB_FILE_SELECTED);
-     file.getName(fname, namesize);
-   }
-   else {
-     SERIAL_PROTOCOLPGM(MSG_USB_OPEN_FILE_FAIL);
-     SERIAL_PROTOCOL(fname);
-     SERIAL_PROTOCOLPGM(".\n");
-   }
 }
 
 void UsbReader::openLogFile(char *name) {
