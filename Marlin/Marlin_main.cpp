@@ -246,7 +246,7 @@ bool Running = true;
 uint8_t marlin_debug_flags = DEBUG_INFO|DEBUG_ERRORS;
 
 static float feedrate = 1500.0, saved_feedrate;
-float current_position[NUM_AXIS] = { 0.0 };
+float current_position[NUM_AXIS] = { 0.0, 0.0, 0.0, 0.0}; /* Modified by didix21 */
 static float destination[NUM_AXIS] = { 0.0 };
 bool axis_known_position[3] = { false };
 
