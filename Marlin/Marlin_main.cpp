@@ -188,6 +188,7 @@
  * M405 - Turn on Filament Sensor extrusion control.  Optional D<delay in cm> to set delay in centimeters between sensor and extruder
  * M406 - Turn off Filament Sensor extrusion control
  * M407 - Display measured filament diameter
+ * M408 - Report JSON-style response
  * M410 - Quickstop. Abort all the planned moves
  * M420 - Enable/Disable Mesh Leveling (with current values) S1=enable S0=disable
  * M421 - Set a single Z coordinate in the Mesh Leveling grid. X<mm> Y<mm> Z<mm>
@@ -4980,7 +4981,12 @@ inline void gcode_M408() {
       "fraction_printed_sd": 0.572,
       "sd_state": 0,
       "fraction_printed_usb": 0.572,
-      "usb_state": 0,
+      "usbStick_state": 0,
+      "usb_state": REG_UOGTHS_SH & 0x1000,
+      
+      // if type == 1 
+      "myName":  "the name of the printer",
+      "geometry": one of "cartesian", "delta", "corexy, "corexz" etc.
     
     }
     AJUDA: https://github.com/MagoKimbra/MarlinKimbra/blob/39919b30e25498aed90dceee3541fd2d91816218/MK/module/MK_Main.cpp
@@ -5109,16 +5115,24 @@ inline void gcode_M408() {
       SERIAL_PROTOCOLPGM(",\"sd_state\":");
       SERIAL_PROTOCOL(card.cardOK); /* Change it */
     #endif
+    
+    
  /***************** Added by didix21 *****************/
     #ifdef USBSUPPORT 
     // ,"fraction_printed_usb": 0
       SERIAL_PROTOCOLPGM(",\"fraction_printed_usb\":");
       SERIAL_PROTOCOL_F(usbStick.getFractionPrinted(),1);
-    // ,"usb_state": 0
-      SERIAL_PROTOCOLPGM(",\"usb_state\":");
+    // ,"usbStick_state": 0
+      SERIAL_PROTOCOLPGM(",\"usbStick_state\":");
       SERIAL_PROTOCOL(usbStick.usbOK);
     #endif
  /****************************************************/
+
+
+    //,"usb_state":
+    SERIAL_PROTOCOLPGM(",\"usb_state\":");
+    SERIAL_PROTOCOL(REG_UOTGHS_SR & 0x1000);
+    
     if (type == 0){
       SERIAL_PROTOCOLPGM("}");
       SERIAL_EOL;
