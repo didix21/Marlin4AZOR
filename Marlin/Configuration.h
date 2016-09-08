@@ -407,11 +407,11 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 // @section machine
 
 // Travel limits after homing (units are in mm)
-#define X_MIN_POS -44
-#define Y_MIN_POS -19
+#define X_MIN_POS -45
+#define Y_MIN_POS -23 //-19
 #define Z_MIN_POS 0
-#define X_MAX_POS 300
-#define Y_MAX_POS 200
+#define X_MAX_POS 303
+#define Y_MAX_POS 202
 #define Z_MAX_POS 200
 
 //===========================================================================
@@ -502,8 +502,8 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 
   // Offsets to the probe relative to the extruder tip (Hotend - Probe)
   // X and Y offsets must be integers
-  #define X_PROBE_OFFSET_FROM_EXTRUDER -5     // Probe on: -left  +right
-  #define Y_PROBE_OFFSET_FROM_EXTRUDER -32     // Probe on: -front +behind
+  #define X_PROBE_OFFSET_FROM_EXTRUDER  10 //-5     // Probe on: -left  +right
+  #define Y_PROBE_OFFSET_FROM_EXTRUDER  25 //-32     // Probe on: -front +behind
   #define Z_PROBE_OFFSET_FROM_EXTRUDER 0  // -below (always!)
 
   #define Z_RAISE_BEFORE_HOMING 5       // (in mm) Raise Z before homing (G28) for Probe Clearance.
@@ -533,8 +533,8 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 
   #ifdef Z_SAFE_HOMING
 
-    #define Z_SAFE_HOMING_X_POINT ((X_MIN_POS + X_MAX_POS) / 2)    // X point for Z homing when homing all axis (G28)
-    #define Z_SAFE_HOMING_Y_POINT ((Y_MIN_POS + Y_MAX_POS) / 2)    // Y point for Z homing when homing all axis (G28)
+    #define Z_SAFE_HOMING_X_POINT X_MAX_POS/2 //((X_MIN_POS + X_MAX_POS) / 2)    // X point for Z homing when homing all axis (G28)
+    #define Z_SAFE_HOMING_Y_POINT Y_MAX_POS/2 //((Y_MIN_POS + Y_MAX_POS) / 2)    // Y point for Z homing when homing all axis (G28)
 
   #endif
 
