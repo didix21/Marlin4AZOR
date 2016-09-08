@@ -66,7 +66,7 @@ Here are some standard links for getting your machine calibrated:
 // Configure serialType as:
 // 0 := Serial Port 0 (Use this if you want to connect to the LCD touch panel)
 // 1 := Native Serial Port (Use this if you want to connect to the PC) 
-#define serialType 1
+#define serialType 0
 
 // This determines the communication speed of the printer
 // :[2400,9600,19200,38400,57600,115200,250000]
@@ -407,11 +407,11 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 // @section machine
 
 // Travel limits after homing (units are in mm)
-#define X_MIN_POS 70
-#define Y_MIN_POS 20
+#define X_MIN_POS -44
+#define Y_MIN_POS -19
 #define Z_MIN_POS 0
-#define X_MAX_POS 450
-#define Y_MAX_POS 220
+#define X_MAX_POS 300
+#define Y_MAX_POS 200
 #define Z_MAX_POS 200
 
 //===========================================================================
