@@ -407,11 +407,11 @@ const bool Z_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the logic 
 // @section machine
 
 // Travel limits after homing (units are in mm)
-#define X_MIN_POS 70
-#define Y_MIN_POS 20
+#define X_MIN_POS -44
+#define Y_MIN_POS -19
 #define Z_MIN_POS 0
-#define X_MAX_POS 450
-#define Y_MAX_POS 220
+#define X_MAX_POS 300
+#define Y_MAX_POS 200
 #define Z_MAX_POS 200
 
 //===========================================================================
