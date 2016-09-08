@@ -4915,7 +4915,8 @@ inline void gcode_M408() {
       "probe": "535", 
       "fanPercent": [75.0, 0.0],
       "fanRPM": 0,
-      "fraction_printed": 0.572
+      "fraction_printed": 0.572,
+      "usb_state": REG_UOGTHS_SH & 0x1000,
     }
     AJUDA: https://github.com/MagoKimbra/MarlinKimbra/blob/39919b30e25498aed90dceee3541fd2d91816218/MK/module/MK_Main.cpp
     */
@@ -5028,6 +5029,10 @@ inline void gcode_M408() {
       SERIAL_PROTOCOLPGM(",\"fraction_printed\":");
       SERIAL_PROTOCOL_F(card.getFractionPrinted(),1);
     #endif
+
+    //,"usb_state":
+    SERIAL_PROTOCOLPGM(",\"usb_state\":");
+    SERIAL_PROTOCOL(REG_UOTGHS_SR & 0x1000);
     
     if (type == 0){
       SERIAL_PROTOCOLPGM("}");
