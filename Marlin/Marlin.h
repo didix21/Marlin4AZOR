@@ -45,6 +45,15 @@ typedef unsigned long millis_t;
 
 #include "WString.h"
 
+bool canBeSwitch = false; // Variable used to switch between SerialUSB or Serial port
+#define MICROUSB_STATE
+#define MICROUSB_CONNECTED MICROUSB_STATE
+
+#ifndef MYSERIAL_MICROUSB
+  #define MYSERIAL_MICROUSB SerialUSB
+#endif 
+
+
 #ifdef AT90USB
   #ifdef BTENABLED
     #define MYSERIAL bt
@@ -52,13 +61,14 @@ typedef unsigned long millis_t;
     #define MYSERIAL Serial
   #endif // BTENABLED
 #else
-  #ifndef MYSERIAL
-    #if serialType == 0 // Set up serial type on configuration.h
-      #define MYSERIAL Serial
-    #elif serialType == 1
-      #define MYSERIAL SerialUSB
-    #endif
-  #endif
+  #define MYSERIAL Serial
+//  #ifndef MYSERIAL
+//    #if serialType == 0 // Set up serial type on configuration.h
+//      #define MYSERIAL Serial
+//    #elif serialType == 1
+//      #define MYSERIAL SerialUSB
+//    #endif
+//  #endif
 #endif
 
 #define SERIAL_CHAR(x) MYSERIAL.write(x)
