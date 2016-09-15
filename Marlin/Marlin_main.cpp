@@ -3082,61 +3082,58 @@ inline void gcode_M17() {
    */
   inline void gcode_M20() {
     #if (defined(SDSUPPORT) || defined(USBSUPPORT))
+      
       #ifdef SDSUPPORT
           card.setroot();
       #endif
       #ifdef USBSUPPORT
           usbStick.setroot();
       #endif
+
       if (code_seen('P')) {
-        
         ++current_command_args;
+        
+        char *dir = current_command_args;
         if (current_command_args[0] == '/') ++current_command_args;
-        if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r') {
-          String dir = "";
-          for (int i = 0; i < strlen(current_command_args); ++i) {
-            if (current_command_args[i] == '/') {
-              #ifdef SDSUPPORT
+
+        if (strncmp(current_command_args,"usb/",4) == 0) {
+          current_command_args += 4;
+          SERIAL_PROTOCOL("{\"dir\":\"/");
+          SERIAL_PROTOCOL(dir);
+          SERIAL_PROTOCOL("\",\"files\":[");
+          if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r')
+            usbStick.ls(&MYSERIAL,current_command_args);
+          else
+            usbStick.ls(&MYSERIAL);
+          SERIAL_PROTOCOLLN("]}");
+          
+        }
+        #ifdef SDSUPPORT
+        else if (strcmp(current_command_args,"sdc/",4) == 0) {
+          current_command_args += 4;
+        
+          if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r') {
+            String dir = "";
+            for (int i = 0; i < strlen(current_command_args); ++i) {
+              if (current_command_args[i] == '/') {
                 if (!card.chdir(dir.c_str())) return;
-              #endif
-              #ifdef USBSUPPORT
-                MYSERIAL.print("DIR: ");
-                MYSERIAL.println(dir.c_str());
-                if (!usbStick.chdir(dir.c_str())) return;
-              #endif
-              dir = "";
-            } else {
-              dir += current_command_args[i];
+                dir = "";
+              } else {
+                dir += current_command_args[i];
+              }
+            }
+            if (dir.length() > 0) {
+                if (!card.chdir(dir.c_str())) return;
             }
           }
-          if (dir.length() > 0) {
-            #ifdef SDSUPPORT
-              if (!card.chdir(dir.c_str())) return;
-            #endif
-            #ifdef USBSUPPORT
-             MYSERIAL.print("DIR: ");
-             MYSERIAL.println(dir.c_str());
-              //if (!usbStick.chdir(dir.c_str())) return;
-             usbStick.ls(&MYSERIAL,dir.c_str());
-            #endif
-          }
-        }
-      }
-      // List Current Folder in SD (Mofdified by Joan)
-      SERIAL_PROTOCOL("{\"dir\":\"/");
-      SERIAL_PROTOCOL(current_command_args);
-      SERIAL_PROTOCOL("\",\"files\":[");
-      
-      #ifdef SDSUPPORT
+          SERIAL_PROTOCOL("{\"dir\":\"/");
+          SERIAL_PROTOCOL(dir);
+          SERIAL_PROTOCOL("\",\"files\":[");
           card.ls(true);
-      #endif
-     
-
-      #ifdef USBSUPPORT
-          usbStick.ls(&MYSERIAL);
-      #endif
-  
-      SERIAL_PROTOCOLLN("]}");
+          SERIAL_PROTOCOLLN("]}");
+        }
+        #endif //SDSUPPORT
+      }
     #endif //SDSUPPORT or USBSUPPORT
     
   }

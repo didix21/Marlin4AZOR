@@ -188,11 +188,11 @@ void UsbReader::initUsb() { //Inits USB
 }
 
 void UsbReader::ls(print_t* pr) {
-  key.ls(pr,0);
+  key.ls(pr,LS_J);
 }
 
 void UsbReader::ls(print_t* pr, const char *relpath) {
-  key.ls(pr,relpath,0);
+  key.ls(pr,relpath,LS_J);
 }
 
 void UsbReader::lsDive(const char *prepend, FatFile parent, const char* const match/*=NULL*/) {
