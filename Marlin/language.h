@@ -133,6 +133,7 @@
 #define MSG_ENDSTOP_HIT                     "TRIGGERED"
 #define MSG_ENDSTOP_OPEN                    "open"
 #define MSG_HOTEND_OFFSET                   "Hotend offsets:"
+#define MSG_NOSUCH_DIRECTORY                "The directory don't exist: "
 
 // SD Message
 #define MSG_SD_CANT_OPEN_SUBDIR             "Cannot open subdir"

@@ -3089,30 +3089,33 @@ inline void gcode_M17() {
       #ifdef USBSUPPORT
           usbStick.setroot();
       #endif
-
-      if (code_seen('P')) {
+      /******************************************* Modified by JFons *******************************************/
+      /**
+       * The M20 gcode has been modified so that can list USB files or SD files.
+       * To change the root it has to be writen like this: P/usb/nameFolder
+       */
+      if (code_seen('P')) {   // To select files from usb or sd we use P
         ++current_command_args;
         
         char *dir = current_command_args;
         if (current_command_args[0] == '/') ++current_command_args;
 
-        if (strncmp(current_command_args,"usb/",4) == 0) {
+        if (strncmp(current_command_args,"usb/",4) == 0) { // Compare if in the current_command_args array there is "usb/" string.
           current_command_args += 4;
+          // JSON Protocol
           SERIAL_PROTOCOL("{\"dir\":\"/");
           SERIAL_PROTOCOL(dir);
           SERIAL_PROTOCOL("\",\"files\":[");
-          if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r')
+          if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r') // In case directory is different "usb/" then:
             usbStick.ls(&MYSERIAL,current_command_args);
-          else
+          else // if not
             usbStick.ls(&MYSERIAL);
           SERIAL_PROTOCOLLN("]}");
-          
         }
         #ifdef SDSUPPORT
-        else if (strcmp(current_command_args,"sdc/",4) == 0) {
+        else if (strncmp(current_command_args,"sdc/",4) == 0) { // Compare if in the current_command_args array there is "sdc/" string.
           current_command_args += 4;
-        
-          if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r') {
+          if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r') { // In case directory is different "sdc/" then:
             String dir = "";
             for (int i = 0; i < strlen(current_command_args); ++i) {
               if (current_command_args[i] == '/') {
@@ -3126,16 +3129,27 @@ inline void gcode_M17() {
                 if (!card.chdir(dir.c_str())) return;
             }
           }
-          SERIAL_PROTOCOL("{\"dir\":\"/");
+          // JSON protocol
+          SERIAL_PROTOCOL("{\"dir\":\"/"); 
           SERIAL_PROTOCOL(dir);
           SERIAL_PROTOCOL("\",\"files\":[");
           card.ls(true);
           SERIAL_PROTOCOLLN("]}");
         }
         #endif //SDSUPPORT
+         else if ((strncmp(current_command_args,"usb/",4) != 0) && (strncmp(current_command_args,"sdc/",4) != 0)) {
+         SERIAL_ECHO_START;
+         SERIAL_ECHOLN(MSG_NOSUCH_DIRECTORY);
+         SERIAL_ECHOLN(dir);
+        } 
+      } 
+      #ifdef SDSUPPORT
+      else {
+        card.ls(true);
       }
+      #endif //SDSUPPORT
     #endif //SDSUPPORT or USBSUPPORT
-    
+    /*********************************************************************************************************************/
   }
 
   /**

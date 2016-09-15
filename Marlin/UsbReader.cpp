@@ -161,7 +161,6 @@ void UsbReader::getStatus() {
 }
 
 void UsbReader::initUsb() { //Inits USB
-  MYSERIAL.print("******* Imprimit******* ");
   usbOK = false;
   if(root.isOpen()) root.close();
   usb.ReleaseDevice(1);
