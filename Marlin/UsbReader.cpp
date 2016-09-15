@@ -39,7 +39,7 @@ bool UsbReader::chdir(const char *relpath) {
 
   if (workDir.isOpen()) parent = &workDir;
 
-  if(!newfile.open( parent, relpath, O_READ)) {
+  if(!newfile.open( parent, relpath, O_RDWR)) {
     SERIAL_ECHO_START;
     SERIAL_ECHOPGM(MSG_USB_CANT_ENTER_SUBDIR);
     SERIAL_ECHOLN(relpath);
@@ -161,9 +161,12 @@ void UsbReader::getStatus() {
 }
 
 void UsbReader::initUsb() { //Inits USB
+  MYSERIAL.print("******* Imprimit******* ");
   usbOK = false;
   if(root.isOpen()) root.close();
-  
+  usb.ReleaseDevice(1);
+//  bulk = BulkOnly(&usb);
+  key = UsbFat(&bulk);
   if(!initUSB(&usb)) {
      SERIAL_ECHO_START;
      SERIAL_ECHOLNPGM(MSG_USB_INIT_FAIL);
@@ -176,13 +179,16 @@ void UsbReader::initUsb() { //Inits USB
      usbOK = true;
      SERIAL_ECHO_START;
      SERIAL_ECHOLNPGM(MSG_USB_STICK_OK);
+     SERIAL_ECHOLNPGM("\r\nVolume Size: ");
+     SERIAL_PROTOCOL((key.volumeBlockCount()/1000)*512/1000);
+     SERIAL_ECHOLNPGM(" MB");
   }      
   workDir = root;
   curDir = &root;
 }
 
-void UsbReader::ls(print_t* pr) {
-  file.ls(pr,0);
+void UsbReader::ls(print_t* pr, const char *path) {
+  key.ls(pr,path,0);
 }
 
 void UsbReader::lsDive(const char *prepend, FatFile parent, const char* const match/*=NULL*/) {

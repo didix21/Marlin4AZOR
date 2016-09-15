@@ -673,6 +673,8 @@ void servo_init() {
  */
 
 //bool connectToSomething;
+
+
 void setup() {
   setup_killpin();
   setup_filrunoutpin();
@@ -769,7 +771,9 @@ void setup() {
   #ifdef STAT_LED_BLUE
     pinMode(STAT_LED_BLUE, OUTPUT);
     digitalWrite(STAT_LED_BLUE, LOW); // turn it off
-  #endif    
+  #endif   
+
+    
 }
 
 /**
@@ -802,9 +806,9 @@ void loop() {
   #endif
 
   /************** Added by didix21 **************/
-  #ifdef USBSUPPORT
-    usbStick.checkAutoStart(false);
-  #endif
+//  #ifdef USBSUPPORT
+//    usbStick.checkAutoStart(false);
+//  #endif
   /*********************************************/
 
   if (commands_in_queue) {
@@ -828,12 +832,8 @@ void loop() {
       }
       else
         process_next_command();
-    #else      
-      process_next_command();
-    #endif //SDSUPPORT 
-
-        /****************************** Added by didix21 /******************************/
-    #ifdef USBSUPPORT
+     /****************************** Added by didix21 /******************************/
+    #elif defined(USBSUPPORT)
       if (usbStick.saving) {
         char *command = command_queue[cmd_queue_index_r];
         if (strstr_P(command, PSTR("M29"))) {
@@ -853,10 +853,13 @@ void loop() {
       else{
         process_next_command();
       }
+     /************************************************************************************/   
     #else      
       process_next_command();
-    #endif //USBSUPPORT 
-   /************************************************************************************/   
+   
+    #endif //SDSUPPORT and USBSUPPORT     
+   
+  
     commands_in_queue--;
     cmd_queue_index_r = (cmd_queue_index_r + 1) % BUFSIZE;
   }
@@ -3125,7 +3128,7 @@ inline void gcode_M17() {
      
 
       #ifdef USBSUPPORT
-          usbStick.ls(&MYSERIAL);
+          usbStick.ls(&MYSERIAL,"ma");
       #endif
   
       SERIAL_PROTOCOLLN("]}");
@@ -3144,6 +3147,7 @@ inline void gcode_M17() {
 
     //Init USB Stick
     #ifdef USBSUPPORT
+        MYSERIAL.println( " AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ");
         usbStick.initUsb();
 /********************* This will be deleted in futur *********************/
 //      if(!isSomeDeviceConnected(&usbStick)){
