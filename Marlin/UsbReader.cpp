@@ -39,7 +39,7 @@ bool UsbReader::chdir(const char *relpath) {
 
   if (workDir.isOpen()) parent = &workDir;
 
-  if(!newfile.open( parent, relpath, O_RDWR)) {
+  if(!newfile.open( parent, relpath, O_READ)) {
     SERIAL_ECHO_START;
     SERIAL_ECHOPGM(MSG_USB_CANT_ENTER_SUBDIR);
     SERIAL_ECHOLN(relpath);
@@ -187,8 +187,12 @@ void UsbReader::initUsb() { //Inits USB
   curDir = &root;
 }
 
-void UsbReader::ls(print_t* pr, const char *path) {
-  key.ls(pr,path,0);
+void UsbReader::ls(print_t* pr) {
+  key.ls(pr,0);
+}
+
+void UsbReader::ls(print_t* pr, const char *relpath) {
+  key.ls(pr,relpath,0);
 }
 
 void UsbReader::lsDive(const char *prepend, FatFile parent, const char* const match/*=NULL*/) {

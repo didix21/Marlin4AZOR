@@ -35,8 +35,8 @@ class UsbReader {
     void getFileName(uint16_t nr, const char* const mastch = NULL);
     void getStatus(); 
     void initUsb(); // Inits the USB Stick
-    void ls(print_t* pr, const char *path);
-   
+    void ls(print_t* pr);
+    void ls(print_t* pr, const char *relpath);
     
     void openFile(char* name, bool read, bool replace_current=true); // Open a file 
     void openLogFile(char* name);

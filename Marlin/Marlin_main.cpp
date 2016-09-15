@@ -3100,6 +3100,8 @@ inline void gcode_M17() {
                 if (!card.chdir(dir.c_str())) return;
               #endif
               #ifdef USBSUPPORT
+                MYSERIAL.print("DIR: ");
+                MYSERIAL.println(dir.c_str());
                 if (!usbStick.chdir(dir.c_str())) return;
               #endif
               dir = "";
@@ -3112,7 +3114,10 @@ inline void gcode_M17() {
               if (!card.chdir(dir.c_str())) return;
             #endif
             #ifdef USBSUPPORT
-              if (!usbStick.chdir(dir.c_str())) return;
+             MYSERIAL.print("DIR: ");
+             MYSERIAL.println(dir.c_str());
+              //if (!usbStick.chdir(dir.c_str())) return;
+             usbStick.ls(&MYSERIAL,dir.c_str());
             #endif
           }
         }
@@ -3128,7 +3133,7 @@ inline void gcode_M17() {
      
 
       #ifdef USBSUPPORT
-          usbStick.ls(&MYSERIAL,"ma");
+          usbStick.ls(&MYSERIAL);
       #endif
   
       SERIAL_PROTOCOLLN("]}");
@@ -3147,17 +3152,7 @@ inline void gcode_M17() {
 
     //Init USB Stick
     #ifdef USBSUPPORT
-        MYSERIAL.println( " AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA ");
         usbStick.initUsb();
-/********************* This will be deleted in futur *********************/
-//      if(!isSomeDeviceConnected(&usbStick)){
-//        SERIAL_ECHOLNPGM(MSG_USB_INIT_FAIL);
-//      }
-//      else {
-//       if(!key.begin()) SERIAL_ECHOLNPGM(MSG_USB_VOL_INIT_FAIL);
-//       else             SERIAL_ECHOLNPGM(MSG_USB_STICK_OK);
-//      }
-/*************************************************************************/
     #endif
   }
 
