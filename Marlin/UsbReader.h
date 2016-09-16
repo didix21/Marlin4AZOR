@@ -33,6 +33,7 @@ class UsbReader {
     void closeFile(bool store_location=false);
     void getAbsFilename(char *t);
     void getFileName(uint16_t nr, const char* const mastch = NULL);
+    void printTopDir(const char *path);
     void getStatus(); 
     void initUsb(); // Inits the USB Stick
     void ls(print_t* pr);

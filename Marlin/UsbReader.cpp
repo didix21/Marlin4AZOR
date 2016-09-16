@@ -311,9 +311,8 @@ void UsbReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
   FatFile myDir;
   curDir = &root;
   char *fname = name;
-
   
-  char *dirname_start , *dirname_end;
+/*char *dirname_start , *dirname_end;
 
   if(name[0] == '/') {
     dirname_start = &name[1];
@@ -344,10 +343,11 @@ void UsbReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
   }
   else { //relative path
     curDir = &workDir;
-  }
+  }*/
 
   if(read) {
-    if(file.open(curDir, fname, O_READ)) {
+    file = key.open(fname,O_READ);
+    if (file.isOpen()){
       filesize = file.fileSize();
       SERIAL_PROTOCOLPGM(MSG_USB_FILE_OPENED);
       SERIAL_PROTOCOL(fname);
@@ -365,7 +365,8 @@ void UsbReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
     }
   } 
   else { //write
-    if(!file.open(curDir, fname, O_CREAT | O_APPEND | O_WRITE | O_TRUNC)) {
+     file = key.open(fname,O_CREAT | O_APPEND | O_WRITE | O_TRUNC);
+    if(!file.isOpen()) {
       SERIAL_PROTOCOLPGM(MSG_USB_OPEN_FILE_FAIL);
       SERIAL_PROTOCOL(fname);
       SERIAL_PROTOCOLPGM(".\n");
@@ -406,6 +407,12 @@ void UsbReader::printingHasFinished() {
     }
     autotempShutdown();
   }
+}
+
+void UsbReader::printTopDir(const char *path) {
+  File d = key.open(path);
+  if (!d.isOpen()) SERIAL_PROTOCOL("FAILED");
+  d.printName(&MYSERIAL);
 }
 
 void UsbReader::release() {

@@ -3097,20 +3097,22 @@ inline void gcode_M17() {
       if (code_seen('P')) {   // To select files from usb or sd we use P
         ++current_command_args;
         
-        char *dir = current_command_args;
+        
         if (current_command_args[0] == '/') ++current_command_args;
-
-        if (strncmp(current_command_args,"usb/",4) == 0) { // Compare if in the current_command_args array there is "usb/" string.
-          current_command_args += 4;
+        char *dir = current_command_args;
+        
+        if (strncmp(current_command_args,"usb",3) == 0) { // Compare if in the current_command_args array there is "usb" string.
+          current_command_args += 3;
+          bool isRoot = strlen(current_command_args) == 0 || current_command_args[0] == '\n' || current_command_args[0] == '\r' || strcmp(current_command_args,"/") == 0;
+          
           // JSON Protocol
           SERIAL_PROTOCOL("{\"dir\":\"/");
           SERIAL_PROTOCOL(dir);
+	  //TO-DO SERIAL_PROTOCOL("\",\"longdir\":\"");
+          //card.printLongPath(current_command_args);
           SERIAL_PROTOCOL("\",\"files\":[");
-          if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r') // In case directory is different "usb/" then:
-            usbStick.ls(&MYSERIAL,current_command_args);
-          else // if not
-            usbStick.ls(&MYSERIAL);
-          SERIAL_PROTOCOLLN("]}");
+          isRoot ?  usbStick.ls(&MYSERIAL) : usbStick.ls(&MYSERIAL,current_command_args);
+          SERIAL_PROTOCOLLN("]}**");
         }
         #ifdef SDSUPPORT
         else if (strncmp(current_command_args,"sdc/",4) == 0) { // Compare if in the current_command_args array there is "sdc/" string.
@@ -3132,6 +3134,8 @@ inline void gcode_M17() {
           // JSON protocol
           SERIAL_PROTOCOL("{\"dir\":\"/"); 
           SERIAL_PROTOCOL(dir);
+          SERIAL_PROTOCOL("\",\"longdir\":\"");
+          card.printLongPath(current_command_args);
           SERIAL_PROTOCOL("\",\"files\":[");
           card.ls(true);
           SERIAL_PROTOCOLLN("]}");
@@ -3340,6 +3344,7 @@ inline void gcode_M31() {
         bool call_procedure = code_seen('P') && (seen_pointer < namestartpos);
     
         if (usbStick.usbOK) {
+          if (strncmp(namestartpos,"/usb",4) == 0) namestartpos += 4;
           usbStick.openFile(namestartpos, true, !call_procedure);
     
           if (code_seen('S') && seen_pointer < namestartpos) // "S" (must occur _before_ the filename!)
