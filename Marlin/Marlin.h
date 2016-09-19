@@ -45,7 +45,7 @@ typedef unsigned long millis_t;
 
 #include "WString.h"
 
-bool canBeSwitch = false; // Variable used to switch between SerialUSB or Serial port
+ extern bool canBeSwitch; // Variable used to switch between SerialUSB or Serial port
 #define MICROUSB_STATE
 #define MICROUSB_CONNECTED MICROUSB_STATE
 
@@ -71,14 +71,14 @@ bool canBeSwitch = false; // Variable used to switch between SerialUSB or Serial
 //  #endif
 #endif
 
-#define SERIAL_CHAR(x) MYSERIAL.write(x)
+#define SERIAL_CHAR(x) ((canBeSwitch) ? MYSERIAL_MICROUSB.write(x) : MYSERIAL.write(x))
 #define SERIAL_EOL SERIAL_CHAR('\n')
 
 #define SERIAL_PROTOCOLCHAR(x) SERIAL_CHAR(x)
-#define SERIAL_PROTOCOL(x) MYSERIAL.print(x)
-#define SERIAL_PROTOCOL_F(x,y) MYSERIAL.print(x,y)
+#define SERIAL_PROTOCOL(x) ((canBeSwitch) ? MYSERIAL_MICROUSB.print(x) : MYSERIAL.print(x))
+#define SERIAL_PROTOCOL_F(x,y) ((canBeSwitch) ? MYSERIAL_MICROUSB.print(x,y) : MYSERIAL.print(x,y))
 #define SERIAL_PROTOCOLPGM(x) serialprintPGM(PSTR(x))
-#define SERIAL_PROTOCOLLN(x) do{ MYSERIAL.print(x); SERIAL_EOL; }while(0)
+#define SERIAL_PROTOCOLLN(x) do{ ((canBeSwitch) ? MYSERIAL_MICROUSB.print(x) : MYSERIAL.print(x)); SERIAL_EOL; }while(0)
 #define SERIAL_PROTOCOLLNPGM(x) do{ serialprintPGM(PSTR(x)); SERIAL_EOL; }while(0)
 
 
@@ -110,7 +110,7 @@ void serial_echopair_P(const char *s_P, unsigned long v);
 FORCE_INLINE void serialprintPGM(const char *str) {
   char ch;
   while ((ch = pgm_read_byte(str))) {
-    MYSERIAL.write(ch);
+    canBeSwitch ? MYSERIAL_MICROUSB.write(ch) : MYSERIAL.write(ch);
     str++;
   }
 }

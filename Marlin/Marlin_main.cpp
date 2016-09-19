@@ -233,7 +233,7 @@
 #ifdef SDSUPPORT
   CardReader card;
 #endif
-
+bool canBeSwitch = false;
 bool Running = true;
 
 uint8_t marlin_debug_flags = DEBUG_INFO|DEBUG_ERRORS;
@@ -629,9 +629,16 @@ void setup() {
   #endif
 
   MYSERIAL.begin(BAUDRATE);
+  MYSERIAL_MICROUSB.begin(BAUDRATE);
+
+  canBeSwitch = true;
+//  if(REG_UOTGHS_SR & 0x1000) canBeSwitch = true;
+//  else canBeSwitch = false;
   
-  while(!MYSERIAL);
-  MYSERIAL.println("The Printer is Ready");
+  while(!MYSERIAL_MICROUSB);
+  MYSERIAL_MICROUSB.println("REG_UOTGHS_SR: ");
+  MYSERIAL_MICROUSB.println(HEX,REG_UOTGHS_SR);
+  canBeSwitch ? MYSERIAL_MICROUSB.println("The Printer is Ready") : MYSERIAL.println("The Printer is Ready");
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
 
@@ -728,8 +735,11 @@ void setup() {
 
 void loop() {
 
-  
+//  if(REG_UOTGHS_SR & 0x1000) canBeSwitch = true;
+//  else canBeSwitch = false;
 
+//  MYSERIAL_MICROUSB.print("canBeSwitch: ");
+//  MYSERIAL_MICROUSB.println(canBeSwitch);
   if (commands_in_queue < BUFSIZE - 1) get_command();
   
   #ifdef SDSUPPORT
@@ -794,7 +804,7 @@ void get_command() {
     static millis_t last_command_time = 0;
     millis_t ms = millis();
   
-    if (!MYSERIAL.available() && commands_in_queue == 0 && ms - last_command_time > NO_TIMEOUTS) {
+    if ((canBeSwitch ? !MYSERIAL_MICROUSB.available() : !MYSERIAL.available()) && commands_in_queue == 0 && ms - last_command_time > NO_TIMEOUTS) {
       SERIAL_ECHOLNPGM(MSG_WAIT);
       last_command_time = ms;
     }
@@ -803,13 +813,13 @@ void get_command() {
   //
   // Loop while serial characters are incoming and the queue is not full
   //
-  while (commands_in_queue < BUFSIZE && MYSERIAL.available() > 0) {
+  while (commands_in_queue < BUFSIZE && (canBeSwitch ? !MYSERIAL_MICROUSB.available() : !MYSERIAL.available()) > 0) {
 
     #ifdef NO_TIMEOUTS
       last_command_time = ms;
     #endif
 
-    serial_char = MYSERIAL.read();
+    serial_char = (canBeSwitch ? MYSERIAL_MICROUSB.read() : MYSERIAL.read());
 
     //
     // If the character ends the line, or the line is full...
@@ -896,9 +906,9 @@ void get_command() {
       serial_count = 0; //clear buffer
     }
     else if (serial_char == '\\') {  // Handle escapes
-      if (MYSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
+      if ((canBeSwitch ? MYSERIAL_MICROUSB.available() : MYSERIAL.available()) > 0 && commands_in_queue < BUFSIZE) {
         // if we have one more character, copy it over
-        serial_char = MYSERIAL.read();
+        serial_char = (canBeSwitch ? MYSERIAL_MICROUSB.read() : MYSERIAL.read());
         command_queue[cmd_queue_index_w][serial_count++] = serial_char;
       }
       // otherwise do nothing
@@ -6116,7 +6126,7 @@ ExitUnknownCommand:
 
 void FlushSerialRequestResend() {
   //char command_queue[cmd_queue_index_r][100]="Resend:";
-  MYSERIAL.flush();
+  (canBeSwitch ? MYSERIAL_MICROUSB.flush() : MYSERIAL.flush());
   SERIAL_PROTOCOLPGM(MSG_RESEND);
   SERIAL_PROTOCOLLN(gcode_LastN + 1);
   ok_to_send();
