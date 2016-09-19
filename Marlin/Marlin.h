@@ -45,14 +45,18 @@ typedef unsigned long millis_t;
 
 #include "WString.h"
 
- extern bool canBeSwitch; // Variable used to switch between SerialUSB or Serial port
-#define MICROUSB_STATE
-#define MICROUSB_CONNECTED MICROUSB_STATE
+
+
 
 #ifndef MYSERIAL_MICROUSB
   #define MYSERIAL_MICROUSB SerialUSB
 #endif 
 
+extern bool canBeSwitch; // Variable used to switch between SerialUSB or Serial port
+
+#ifndef MASK_MICROUSB_CONNECTED 
+  #define MASK_MICROUSB_CONNECTED 0x1000
+#endif
 
 #ifdef AT90USB
   #ifdef BTENABLED

@@ -630,14 +630,13 @@ void setup() {
 
   MYSERIAL.begin(BAUDRATE);
   MYSERIAL_MICROUSB.begin(BAUDRATE);
-
-  canBeSwitch = true;
-//  if(REG_UOTGHS_SR & 0x1000) canBeSwitch = true;
-//  else canBeSwitch = false;
   
   while(!MYSERIAL_MICROUSB);
-  MYSERIAL_MICROUSB.println("REG_UOTGHS_SR: ");
-  MYSERIAL_MICROUSB.println(HEX,REG_UOTGHS_SR);
+    if(REG_UOTGHS_SR & MASK_MICROUSB_CONNECTED) 
+    canBeSwitch = true;
+  else
+    canBeSwitch = false;
+
   canBeSwitch ? MYSERIAL_MICROUSB.println("The Printer is Ready") : MYSERIAL.println("The Printer is Ready");
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
@@ -735,11 +734,10 @@ void setup() {
 
 void loop() {
 
-//  if(REG_UOTGHS_SR & 0x1000) canBeSwitch = true;
-//  else canBeSwitch = false;
+ if(REG_UOTGHS_SR & MASK_MICROUSB_CONNECTED) canBeSwitch = true;
+ else canBeSwitch = false;
 
-//  MYSERIAL_MICROUSB.print("canBeSwitch: ");
-//  MYSERIAL_MICROUSB.println(canBeSwitch);
+
   if (commands_in_queue < BUFSIZE - 1) get_command();
   
   #ifdef SDSUPPORT
@@ -813,7 +811,7 @@ void get_command() {
   //
   // Loop while serial characters are incoming and the queue is not full
   //
-  while (commands_in_queue < BUFSIZE && (canBeSwitch ? !MYSERIAL_MICROUSB.available() : !MYSERIAL.available()) > 0) {
+  while (commands_in_queue < BUFSIZE && (canBeSwitch ? MYSERIAL_MICROUSB.available() : MYSERIAL.available()) > 0) {
 
     #ifdef NO_TIMEOUTS
       last_command_time = ms;
