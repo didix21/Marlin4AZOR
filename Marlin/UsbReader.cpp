@@ -409,12 +409,6 @@ void UsbReader::printingHasFinished() {
   }
 }
 
-void UsbReader::printTopDir(const char *path) {
-  File d = key.open(path);
-  if (!d.isOpen()) SERIAL_PROTOCOL("FAILED");
-  d.printName(&MYSERIAL);
-}
-
 void UsbReader::release() {
   usbprinting = false;
   usbOK = false;

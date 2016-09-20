@@ -3108,8 +3108,6 @@ inline void gcode_M17() {
           // JSON Protocol
           SERIAL_PROTOCOL("{\"dir\":\"/");
           SERIAL_PROTOCOL(dir);
-	  //TO-DO SERIAL_PROTOCOL("\",\"longdir\":\"");
-          //card.printLongPath(current_command_args);
           SERIAL_PROTOCOL("\",\"files\":[");
           isRoot ?  usbStick.ls(&MYSERIAL) : usbStick.ls(&MYSERIAL,current_command_args);
           SERIAL_PROTOCOLLN("]}**");
