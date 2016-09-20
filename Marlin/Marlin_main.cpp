@@ -631,8 +631,9 @@ void setup() {
   MYSERIAL.begin(BAUDRATE);
   MYSERIAL_MICROUSB.begin(BAUDRATE);
   
-  while(!MYSERIAL_MICROUSB);
-    if(REG_UOTGHS_SR & MASK_MICROUSB_CONNECTED) 
+  while(!MYSERIAL_MICROUSB && !MYSERIAL);
+  
+  if(REG_UOTGHS_SR & MASK_MICROUSB_CONNECTED) 
     canBeSwitch = true;
   else
     canBeSwitch = false;
@@ -733,10 +734,26 @@ void setup() {
  */
 
 void loop() {
-
- if(REG_UOTGHS_SR & MASK_MICROUSB_CONNECTED) canBeSwitch = true;
- else canBeSwitch = false;
-
+ 
+  if((REG_UOTGHS_SR & MASK_MICROUSB_CONNECTED) && !card.sdprinting){
+    if (!canBeSwitch) {
+      canBeSwitch = true;
+      MYSERIAL.println("{\"microusb\":1}");
+    }
+  } else {
+    if (canBeSwitch) {
+      canBeSwitch = false;
+      MYSERIAL.println("{\"microusb\":0}");
+    }
+  }
+  
+  static millis_t microusb_ms = 0;
+  if (millis() - microusb_ms > 2500){
+    MYSERIAL.print("{\"microusb\":");
+    MYSERIAL.print(canBeSwitch ? 1 : 0);
+    MYSERIAL.println("}**");
+    microusb_ms = millis();
+  }
 
   if (commands_in_queue < BUFSIZE - 1) get_command();
   
