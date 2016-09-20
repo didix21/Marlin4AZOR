@@ -22,6 +22,7 @@ UsbReader::UsbReader():bulk(&usb),key(&bulk) { // Quick Initialitzation of const
   next_autostart_ms = millis() + 5000;
 }
 
+#ifndef SDSUPPORT
 char *createFilename(char *buffer, const dir_t &p) { // buffer > 12characters
   char *pos = buffer;
   for (uint8_t i = 0; i < 11; i++) {
@@ -32,6 +33,9 @@ char *createFilename(char *buffer, const dir_t &p) { // buffer > 12characters
    *pos++ = 0;
    return buffer;
 }
+#else
+  char *createFilename(char *buffer, const dir_t &p); // Implemented in cardreader.cpp
+#endif
 
 bool UsbReader::chdir(const char *relpath) {
   FatFile newfile;

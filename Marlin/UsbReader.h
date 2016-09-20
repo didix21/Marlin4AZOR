@@ -7,10 +7,7 @@
 
 #ifdef USBSUPPORT
 
-
 #include "Usb_Stick.h"
-
-#define FILENAME_LENGTH 13
 
 enum LsAction {LS_SerialPrint, LS_Count, LS_GetFilename};
 
