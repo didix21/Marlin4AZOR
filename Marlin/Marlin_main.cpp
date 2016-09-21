@@ -3305,17 +3305,20 @@ inline void gcode_M31() {
    * M32: Select file and start SD Print
    */
   inline void gcode_M32() {
+    char* namestartpos;
+    bool call_procedure;
+    
     #ifdef SDSUPPORT
         if (card.sdprinting)
           st_synchronize();
 
-        char* namestartpos = strchr(current_command_args, '!');  // Find ! to indicate filename string start.
+        namestartpos = strchr(current_command_args, '!');  // Find ! to indicate filename string start.
         if (!namestartpos)
           namestartpos = current_command_args; // Default name position, 4 letters after the M
         else
           namestartpos++; //to skip the '!'
     
-        bool call_procedure = code_seen('P') && (seen_pointer < namestartpos);
+        call_procedure = code_seen('P') && (seen_pointer < namestartpos);
     
         if (card.cardOK) {
           card.openFile(namestartpos, true, !call_procedure);
@@ -3333,13 +3336,13 @@ inline void gcode_M31() {
         if (usbStick.usbprinting) 
           st_synchronize();
 
-        char* namestartpos = strchr(current_command_args, '!');  // Find ! to indicate filename string start.
+        namestartpos = strchr(current_command_args, '!');  // Find ! to indicate filename string start.
         if (!namestartpos)
           namestartpos = current_command_args; // Default name position, 4 letters after the M
         else
           namestartpos++; //to skip the '!'
     
-        bool call_procedure = code_seen('P') && (seen_pointer < namestartpos);
+        call_procedure = code_seen('P') && (seen_pointer < namestartpos);
     
         if (usbStick.usbOK) {
           if (strncmp(namestartpos,"/usb",4) == 0) namestartpos += 4;

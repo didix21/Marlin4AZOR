@@ -21,6 +21,8 @@
 #include "Marlin.h"
 #ifdef SDSUPPORT
 #include "SdBaseFile.h"
+#include "SdFatStructs.h"
+
 //------------------------------------------------------------------------------
 // pointer to cwd directory
 SdBaseFile* SdBaseFile::cwd_ = 0;

@@ -52,7 +52,7 @@ void CardReader::lsDive(const char *prepend, SdFile parent, const char * const m
   
   // Read the next entry from a directory
   bool firstFile = true;
-  while (parent.readDir(p, longFilename) > 0) {
+  while (parent.readDir(&p, longFilename) > 0) {
 
     // If the entry is a directory and the action is LS_SerialPrint
     if (lsAction != LS_Count && lsAction != LS_GetFilename) {
@@ -154,7 +154,7 @@ void CardReader::ls(bool currentDir /*=false*/)  {
 
       // Open the sub-item as the new dive parent
       SdFile dir;
-      if (!dir.open(diveDir, segment, O_READ)) {
+      if (!dir.open(&diveDir, segment, O_READ)) {
         SERIAL_EOL;
         SERIAL_ECHO_START;
         SERIAL_ECHOPGM(MSG_SD_CANT_OPEN_SUBDIR);
@@ -481,7 +481,7 @@ void CardReader::checkautostart(bool force) {
   root.rewind();
 
   bool found = false;
-  while (root.readDir(p, NULL) > 0) {
+  while (root.readDir(&p, NULL) > 0) {
     for (int8_t i = 0; i < (int8_t)strlen((char*)p.name); i++) p.name[i] = tolower(p.name[i]);
     if (p.name[9] != '~' && strncmp((char*)p.name, autoname, 5) == 0) {
       char cmd[4 + (FILENAME_LENGTH + 1) * MAX_DIR_DEPTH + 2];
@@ -535,7 +535,7 @@ bool CardReader::chdir(const char * relpath) {
 
   if (workDir.isOpen()) parent = &workDir;
 
-  if (!newfile.open(*parent, relpath, O_READ)) {
+  if (!newfile.open(parent, relpath, O_READ)) {
     SERIAL_ECHO_START;
     SERIAL_ECHOPGM(MSG_SD_CANT_ENTER_SUBDIR);
     SERIAL_ECHOLN(relpath);
