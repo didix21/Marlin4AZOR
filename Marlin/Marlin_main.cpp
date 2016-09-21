@@ -1914,6 +1914,16 @@ inline void gcode_G0_G1() {
     #endif //FWRETRACT
 
     prepare_move();
+
+    if (code_seen('J')) {
+      SERIAL_PROTOCOL("{\"pos\": [");
+      SERIAL_PROTOCOL(current_position[X_AXIS]);
+      SERIAL_PROTOCOLPGM(",");
+      SERIAL_PROTOCOL(current_position[Y_AXIS]);
+      SERIAL_PROTOCOLPGM(",");
+      SERIAL_PROTOCOL(current_position[Z_AXIS]);
+      SERIAL_PROTOCOL("]}\n");
+    }
   }
 }
 

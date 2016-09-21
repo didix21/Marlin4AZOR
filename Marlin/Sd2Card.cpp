@@ -277,6 +277,8 @@ bool Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
   return setSckRate(sckRateID);
 
  fail:
+  MYSERIAL.print("ERROR CODE: 0x");
+  MYSERIAL.println(errorCode_,HEX);
   chipSelectHigh();
   return false;
 }
