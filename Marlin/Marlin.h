@@ -45,6 +45,19 @@ typedef unsigned long millis_t;
 
 #include "WString.h"
 
+
+
+
+#ifndef MYSERIAL_MICROUSB
+  #define MYSERIAL_MICROUSB SerialUSB
+#endif 
+
+extern bool canBeSwitch; // Variable used to switch between SerialUSB or Serial port
+
+#ifndef MASK_MICROUSB_CONNECTED 
+  #define MASK_MICROUSB_CONNECTED 0x1000
+#endif
+
 #ifdef AT90USB
   #ifdef BTENABLED
     #define MYSERIAL bt
@@ -52,23 +65,24 @@ typedef unsigned long millis_t;
     #define MYSERIAL Serial
   #endif // BTENABLED
 #else
-  #ifndef MYSERIAL
-    #if serialType == 0 // Set up serial type on configuration.h
-      #define MYSERIAL Serial
-    #elif serialType == 1
-      #define MYSERIAL SerialUSB
-    #endif
-  #endif
+  #define MYSERIAL Serial
+//  #ifndef MYSERIAL
+//    #if serialType == 0 // Set up serial type on configuration.h
+//      #define MYSERIAL Serial
+//    #elif serialType == 1
+//      #define MYSERIAL SerialUSB
+//    #endif
+//  #endif
 #endif
 
-#define SERIAL_CHAR(x) MYSERIAL.write(x)
+#define SERIAL_CHAR(x) ((canBeSwitch) ? MYSERIAL_MICROUSB.write(x) : MYSERIAL.write(x))
 #define SERIAL_EOL SERIAL_CHAR('\n')
 
 #define SERIAL_PROTOCOLCHAR(x) SERIAL_CHAR(x)
-#define SERIAL_PROTOCOL(x) MYSERIAL.print(x)
-#define SERIAL_PROTOCOL_F(x,y) MYSERIAL.print(x,y)
+#define SERIAL_PROTOCOL(x) ((canBeSwitch) ? MYSERIAL_MICROUSB.print(x) : MYSERIAL.print(x))
+#define SERIAL_PROTOCOL_F(x,y) ((canBeSwitch) ? MYSERIAL_MICROUSB.print(x,y) : MYSERIAL.print(x,y))
 #define SERIAL_PROTOCOLPGM(x) serialprintPGM(PSTR(x))
-#define SERIAL_PROTOCOLLN(x) do{ MYSERIAL.print(x); SERIAL_EOL; }while(0)
+#define SERIAL_PROTOCOLLN(x) do{ ((canBeSwitch) ? MYSERIAL_MICROUSB.print(x) : MYSERIAL.print(x)); SERIAL_EOL; }while(0)
 #define SERIAL_PROTOCOLLNPGM(x) do{ serialprintPGM(PSTR(x)); SERIAL_EOL; }while(0)
 
 
@@ -100,7 +114,7 @@ void serial_echopair_P(const char *s_P, unsigned long v);
 FORCE_INLINE void serialprintPGM(const char *str) {
   char ch;
   while ((ch = pgm_read_byte(str))) {
-    MYSERIAL.write(ch);
+    canBeSwitch ? MYSERIAL_MICROUSB.write(ch) : MYSERIAL.write(ch);
     str++;
   }
 }
