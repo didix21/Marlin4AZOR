@@ -3081,14 +3081,7 @@ inline void gcode_M17() {
    * M20: List SD card and USB Stick to serial output
    */
   inline void gcode_M20() {
-    #if (defined(SDSUPPORT) || defined(USBSUPPORT))
-      
-      #ifdef SDSUPPORT
-          card.setroot();
-      #endif
-      #ifdef USBSUPPORT
-          usbStick.setroot();
-      #endif
+    #if (defined(SDSUPPORT) || defined(USBSUPPORT))       
       /******************************************* Modified by JFons *******************************************/
       /**
        * The M20 gcode has been modified so that can list USB files or SD files.
@@ -3096,60 +3089,62 @@ inline void gcode_M17() {
        */
       if (code_seen('P')) {   // To select files from usb or sd we use P
         ++current_command_args;
-        
-        
+
         if (current_command_args[0] == '/') ++current_command_args;
         char *dir = current_command_args;
+
+        #ifdef USBSUPPORT
+          if (strncmp(current_command_args,"usb",3) == 0) { // Compare if in the current_command_args array there is "usb" string.
+            current_command_args += 3;
+            usbStick.setroot();
+            
+            bool isRoot = strlen(current_command_args) == 0 || current_command_args[0] == '\n' || current_command_args[0] == '\r' || strcmp(current_command_args,"/") == 0;
+            
+            // JSON Protocol
+            SERIAL_PROTOCOL("{\"dir\":\"/");
+            SERIAL_PROTOCOL(dir);
+            SERIAL_PROTOCOL("\",\"files\":[");
+            isRoot ?  usbStick.ls(&MYSERIAL) : usbStick.ls(&MYSERIAL, current_command_args);
+            SERIAL_PROTOCOLLN("]}**");
+          } else 
+        #endif
         
-        if (strncmp(current_command_args,"usb",3) == 0) { // Compare if in the current_command_args array there is "usb" string.
-          current_command_args += 3;
-          bool isRoot = strlen(current_command_args) == 0 || current_command_args[0] == '\n' || current_command_args[0] == '\r' || strcmp(current_command_args,"/") == 0;
-          
-          // JSON Protocol
-          SERIAL_PROTOCOL("{\"dir\":\"/");
-          SERIAL_PROTOCOL(dir);
-          SERIAL_PROTOCOL("\",\"files\":[");
-          isRoot ?  usbStick.ls(&MYSERIAL) : usbStick.ls(&MYSERIAL,current_command_args);
-          SERIAL_PROTOCOLLN("]}**");
-        }
         #ifdef SDSUPPORT
-        else if (strncmp(current_command_args,"sdc/",4) == 0) { // Compare if in the current_command_args array there is "sdc/" string.
-          current_command_args += 4;
-          if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r') { // In case directory is different "sdc/" then:
-            String dir = "";
-            for (int i = 0; i < strlen(current_command_args); ++i) {
-              if (current_command_args[i] == '/') {
-                if (!card.chdir(dir.c_str())) return;
-                dir = "";
-              } else {
-                dir += current_command_args[i];
+          if (strncmp(current_command_args,"sdc",3) == 0) { // Compare if in the current_command_args array there is "sdc" string.
+            current_command_args += 3;
+            card.setroot();
+            
+            if (strlen(current_command_args) > 0 && current_command_args[0] != '\n' && current_command_args[0] != '\r' && strcmp(current_command_args,"/") != 0) { // In case directory is different "sdc" then:
+              String dir = "";
+              for (int i = 0; i < strlen(current_command_args); ++i) {
+                if (current_command_args[i] == '/') {
+                  if (!card.chdir(dir.c_str())) return;
+                  dir = "";
+                } else {
+                  dir += current_command_args[i];
+                }
+              }
+              if (dir.length() > 0) {
+                  if (!card.chdir(dir.c_str())) return;
               }
             }
-            if (dir.length() > 0) {
-                if (!card.chdir(dir.c_str())) return;
-            }
-          }
-          // JSON protocol
-          SERIAL_PROTOCOL("{\"dir\":\"/"); 
-          SERIAL_PROTOCOL(dir);
-          SERIAL_PROTOCOL("\",\"longdir\":\"");
-          card.printLongPath(current_command_args);
-          SERIAL_PROTOCOL("\",\"files\":[");
-          card.ls(true);
-          SERIAL_PROTOCOLLN("]}");
-        }
+            // JSON protocol
+            SERIAL_PROTOCOL("{\"dir\":\"/"); 
+            SERIAL_PROTOCOL(dir);
+            SERIAL_PROTOCOL("\",\"longdir\":\"");
+            card.printLongPath(current_command_args);
+            SERIAL_PROTOCOL("\",\"files\":[");
+            card.ls(true);
+            SERIAL_PROTOCOLLN("]}");
+            
+          } else
         #endif //SDSUPPORT
-         else if ((strncmp(current_command_args,"usb/",4) != 0) && (strncmp(current_command_args,"sdc/",4) != 0)) {
-         SERIAL_ECHO_START;
-         SERIAL_ECHOLN(MSG_NOSUCH_DIRECTORY);
-         SERIAL_ECHOLN(dir);
+           if ((strncmp(current_command_args,"usb/",4) != 0) && (strncmp(current_command_args,"sdc/",4) != 0)) {
+             SERIAL_ECHO_START;
+             SERIAL_ECHOLN(MSG_NOSUCH_DIRECTORY);
+             SERIAL_ECHOLN(dir);
+          } 
         } 
-      } 
-      #ifdef SDSUPPORT
-      else {
-        card.ls(true);
-      }
-      #endif //SDSUPPORT
     #endif //SDSUPPORT or USBSUPPORT
     /*********************************************************************************************************************/
   }
@@ -3320,7 +3315,8 @@ inline void gcode_M31() {
     
         call_procedure = code_seen('P') && (seen_pointer < namestartpos);
     
-        if (card.cardOK) {
+        if (card.cardOK && strncmp(namestartpos,"/sdc",4) == 0) {
+          namestartpos += 4;
           card.openFile(namestartpos, true, !call_procedure);
     
           if (code_seen('S') && seen_pointer < namestartpos) // "S" (must occur _before_ the filename!)
@@ -3344,8 +3340,8 @@ inline void gcode_M31() {
     
         call_procedure = code_seen('P') && (seen_pointer < namestartpos);
     
-        if (usbStick.usbOK) {
-          if (strncmp(namestartpos,"/usb",4) == 0) namestartpos += 4;
+        if (usbStick.usbOK && strncmp(namestartpos,"/usb",4) == 0) {
+          namestartpos += 4;
           usbStick.openFile(namestartpos, true, !call_procedure);
     
           if (code_seen('S') && seen_pointer < namestartpos) // "S" (must occur _before_ the filename!)
