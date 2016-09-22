@@ -734,7 +734,6 @@ void setup() {
  */
 
 void loop() {
- 
   if((REG_UOTGHS_SR & MASK_MICROUSB_CONNECTED) && !card.sdprinting){
     if (!canBeSwitch) {
       canBeSwitch = true;
@@ -935,7 +934,7 @@ void get_command() {
   }
 
   #ifdef SDSUPPORT
-
+  
     if (!card.sdprinting || serial_count) return;
 
     // '#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
@@ -948,10 +947,12 @@ void get_command() {
     while (!card.eof() && commands_in_queue < BUFSIZE && !stop_buffering) {
       int16_t n = card.get();
       serial_char = (char)n;
+      
       if (serial_char == '\n' || serial_char == '\r' ||
           ((serial_char == '#' || serial_char == ':') && !comment_mode) ||
           serial_count >= (MAX_CMD_SIZE - 1) || n == -1
       ) {
+
         if (card.eof()) {
           SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
           print_job_stop_ms = millis();
@@ -971,21 +972,20 @@ void get_command() {
           comment_mode = false; //for new command
           return; //if empty line
         }
+        
         command_queue[cmd_queue_index_w][serial_count] = 0; //terminate string
-        // if (!comment_mode) {
+         if (!comment_mode) {
         fromsd[cmd_queue_index_w] = true;
         commands_in_queue += 1;
         cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
-        // }
+         }
         comment_mode = false; //for new command
         serial_count = 0; //clear buffer
-      }
-      else {
+      } else {
         if (serial_char == ';') comment_mode = true;
         if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
       }
     }
-
   #endif // SDSUPPORT
 }
 
