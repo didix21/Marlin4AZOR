@@ -3118,7 +3118,7 @@ inline void gcode_M17() {
               String dir = "";
               for (int i = 0; i < strlen(current_command_args); ++i) {
                 if (current_command_args[i] == '/') {
-                  if (!card.chdir(dir.c_str())) return;
+                  if (dir.length() > 0 && !card.chdir(dir.c_str())) return;
                   dir = "";
                 } else {
                   dir += current_command_args[i];
