@@ -1010,57 +1010,58 @@ void get_command() {
     }
   }
 
-  #ifdef SDSUPPORT
-    if (!card.sdprinting || serial_count) return;
-
-    // '#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
-    // if it occurs, stop_buffering is triggered and the buffer is ran dry.
-    // this character _can_ occur in serial com, due to checksums. however, no checksums are used in SD printing
-
-    static bool stop_buffering = false;
-    if (commands_in_queue == 0) stop_buffering = false;
-
-    while (!card.eof() && commands_in_queue < BUFSIZE && !stop_buffering) {
-      int16_t n = card.get();
-      serial_char = (char)n;
-      if (serial_char == '\n' || serial_char == '\r' ||
-          ((serial_char == '#' || serial_char == ':') && !comment_mode) ||
-          serial_count >= (MAX_CMD_SIZE - 1) || n == -1
-      ) {
-        if (card.eof()) {
-          SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
-          print_job_stop_ms = millis();
-          char time[30];
-          millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
-          int hours = t / 60 / 60, minutes = (t / 60) % 60;
-          sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
-          SERIAL_ECHO_START;
-          SERIAL_ECHOLN(time);
-          lcd_setstatus(time, true);
-          card.printingHasFinished();
-          card.checkautostart(true);
-        }
-        if (serial_char == '#') stop_buffering = true;
-
-        if (!serial_count) {
+  #if defined(SDSUPPORT) 
+    if ((!card.sdprinting && !usbStick.usbprinting) || serial_count) return;
+    if(card.sdprinting){
+      // '#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
+      // if it occurs, stop_buffering is triggered and the buffer is ran dry.
+      // this character _can_ occur in serial com, due to checksums. however, no checksums are used in SD printing
+  
+      static bool stop_buffering = false;
+      if (commands_in_queue == 0) stop_buffering = false;
+  
+      while (!card.eof() && commands_in_queue < BUFSIZE && !stop_buffering) {
+        int16_t n = card.get();
+        serial_char = (char)n;
+        if (serial_char == '\n' || serial_char == '\r' ||
+            ((serial_char == '#' || serial_char == ':') && !comment_mode) ||
+            serial_count >= (MAX_CMD_SIZE - 1) || n == -1
+        ) {
+          if (card.eof()) {
+            SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
+            print_job_stop_ms = millis();
+            char time[30];
+            millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
+            int hours = t / 60 / 60, minutes = (t / 60) % 60;
+            sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
+            SERIAL_ECHO_START;
+            SERIAL_ECHOLN(time);
+            lcd_setstatus(time, true);
+            card.printingHasFinished();
+            card.checkautostart(true);
+          }
+          if (serial_char == '#') stop_buffering = true;
+  
+          if (!serial_count) {
+            comment_mode = false; //for new command
+            return; //if empty line
+          }
+          command_queue[cmd_queue_index_w][serial_count] = 0; //terminate string
+          // if (!comment_mode) {
+          fromsd[cmd_queue_index_w] = true;
+          commands_in_queue += 1;
+          cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
+          // }
           comment_mode = false; //for new command
-          return; //if empty line
+          serial_count = 0; //clear buffer
         }
-        command_queue[cmd_queue_index_w][serial_count] = 0; //terminate string
-        // if (!comment_mode) {
-        fromsd[cmd_queue_index_w] = true;
-        commands_in_queue += 1;
-        cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
-        // }
-        comment_mode = false; //for new command
-        serial_count = 0; //clear buffer
-      }
-      else {
-        if (serial_char == ';') comment_mode = true;
-        if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
+        else {
+          if (serial_char == ';') comment_mode = true;
+          if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
+        }
       }
     }
-  #endif // SDSUPPORT
+    #endif // SDSUPPORT
 /*********************************************************** Added by didix21 ****************************************************************/
   #ifdef USBSUPPORT
     if(!usbStick.usbprinting || serial_count) return;
@@ -5869,8 +5870,10 @@ void process_next_command() {
           gcode_M32(); break;
 
         #ifdef LONG_FILENAME_HOST_SUPPORT
-          case 33: //M33 - Get the long full path to a file or folder
-            gcode_M33(); break;
+          #ifdef SDSUPPORT
+            case 33: //M33 - Get the long full path to a file or folder
+              gcode_M33(); break;
+          #endif
         #endif // LONG_FILENAME_HOST_SUPPORT
         #ifdef SDSUPPORT
           case 928: //M928 - Start SD write
