@@ -550,20 +550,20 @@ void enqueue_and_echo_commands_P(const char* pgcode) {
   drain_queued_commands_P(); // first command executed asap (when possible)
 }
 
-//void clear_command_queue() {
-//  cmd_qeue_index_r = cmd_queue_index_w;
-//  commands_in_queue = 0;
-//}
+/*void clear_command_queue() {
+  cmd_qeue_index_r = cmd_queue_index_w;
+  commands_in_queue = 0;
+}*/
 
 /**
  * Once a new command is in the ring buffer, call this to commit it
  */
 
-//inline void _commit_command(bool say_ok) {
-//  send_ok[cmd_queue_index_w] = say_ok;
-//  cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
-//  commands_in_queue++;
-//}
+inline void _commit_command(bool say_ok) {
+  //send_ok[cmd_queue_index_w] = say_ok;
+  cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
+  commands_in_queue++;
+}
 
 inline bool _enqueuecommand(const char* cmd, bool say_ok/*=false*/) {
   if(*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
