@@ -472,63 +472,151 @@ void serial_echopair_P(const char *s_P, unsigned long v) { serialprintPGM(s_P); 
 
 #endif
 
+/*********************************** This will be deleted in future ***********************************/
 /**
  * Inject the next command from the command queue, when possible
  * Return false only if no command was pending
  */
+//static bool drain_queued_commands_P() {
+//  if (!queued_commands_P) return false;
+//
+//  // Get the next 30 chars from the sequence of gcodes to run
+//  char cmd[30];
+//  strncpy_P(cmd, queued_commands_P, sizeof(cmd) - 1);
+//  cmd[sizeof(cmd) - 1] = '\0';
+//
+//  // Look for the end of line, or the end of sequence
+//  size_t i = 0;
+//  char c;
+//  while((c = cmd[i]) && c != '\n') i++; // find the end of this gcode command
+//  cmd[i] = '\0';
+//  if (enqueuecommand(cmd)) {      // buffer was not full (else we will retry later)
+//    if (c)
+//      queued_commands_P += i + 1; // move to next command
+//    else
+//      queued_commands_P = NULL;   // will have no more commands in the sequence
+//  }
+//  return true;
+//}
+/***************************************************************************************************/
+
+/************************************** Added by didix21 *******************************************/
+/**
+ * Inject the next "immediate" command, when possible.
+ * Return true if any immediate commands remain to inject.
+ */
+
 static bool drain_queued_commands_P() {
-  if (!queued_commands_P) return false;
+  if (queued_commands_P != NULL) {
+    size_t i = 0;
+    char c, cmd[30];
+    strncpy_P(cmd, queued_commands_P, sizeof(cmd) - 1);
+    cmd[sizeof(cmd) - 1] = '\0';
+    while((c = cmd[i]) && c != '\n') i++; //find the end of this gcode command
+    cmd[i] = '\0';
+    if (enqueue_and_echo_command(cmd)) { // succes?
+      if (c)                             // newline char?
+        queued_commands_P += i + 1;      // advance to the next command
+      else
+        queued_commands_P = NULL;
+    }      
+   }
+   return (queued_commands_P != NULL);   // return whether any more remain
+ }
+/*******************************************************************************************************/
 
-  // Get the next 30 chars from the sequence of gcodes to run
-  char cmd[30];
-  strncpy_P(cmd, queued_commands_P, sizeof(cmd) - 1);
-  cmd[sizeof(cmd) - 1] = '\0';
 
-  // Look for the end of line, or the end of sequence
-  size_t i = 0;
-  char c;
-  while((c = cmd[i]) && c != '\n') i++; // find the end of this gcode command
-  cmd[i] = '\0';
-  if (enqueuecommand(cmd)) {      // buffer was not full (else we will retry later)
-    if (c)
-      queued_commands_P += i + 1; // move to next command
-    else
-      queued_commands_P = NULL;   // will have no more commands in the sequence
-  }
-  return true;
-}
-
+/*********************************** This will be deleted in future ***********************************/
 /**
  * Record one or many commands to run from program memory.
  * Aborts the current queue, if any.
  * Note: drain_queued_commands_P() must be called repeatedly to drain the commands afterwards
  */
-void enqueuecommands_P(const char* pgcode) {
+//void enqueuecommands_P(const char* pgcode) {
+//  queued_commands_P = pgcode;
+//  drain_queued_commands_P(); // first command executed asap (when possible)
+//}
+/******************************************************************************************************/
+
+/*************************************** Added by didix21 *********************************************/
+/**
+ * Record one or many commands to run from program memory.
+ * Aborts the current queue, if any.
+ * Note: drain_queued_commands_P() must be called repeatedly to drain the commands afterwards
+ */
+
+void enqueue_and_echo_commands_P(const char* pgcode) {
   queued_commands_P = pgcode;
   drain_queued_commands_P(); // first command executed asap (when possible)
 }
 
+//void clear_command_queue() {
+//  cmd_qeue_index_r = cmd_queue_index_w;
+//  commands_in_queue = 0;
+//}
+
+/**
+ * Once a new command is in the ring buffer, call this to commit it
+ */
+
+//inline void _commit_command(bool say_ok) {
+//  send_ok[cmd_queue_index_w] = say_ok;
+//  cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
+//  commands_in_queue++;
+//}
+
+inline bool _enqueuecommand(const char* cmd, bool say_ok/*=false*/) {
+  if(*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
+  strcpy(command_queue[cmd_queue_index_w], cmd);
+  _commit_command(say_ok);
+  return true;
+}
+
+void enqueue_and_echo_command_now(const char* cmd) {
+  while (!enqueue_and_echo_command(cmd)) idle();
+}
+
+/**
+ * Enqueue with Serial Echo
+ */
+
+bool enqueue_and_echo_command(const char* cmd, bool say_ok /*=false*/) {
+  if (_enqueuecommand(cmd, say_ok)) {
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPGM(MSG_Enqueueing);
+    SERIAL_ECHOLNPGM("\"");
+    return true;
+  }
+  return false;
+}
+/*******************************************************************************************************/
+
+/*********************************** This will be deleted in future ***********************************/
 /**
  * Copy a command directly into the main command buffer, from RAM.
  *
  * This is done in a non-safe way and needs a rework someday.
  * Returns false if it doesn't add any command
  */
-bool enqueuecommand(const char *cmd) {
+//bool enqueuecommand(const char *cmd) {
+//
+//  if (*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
+//
+//  // This is dangerous if a mixing of serial and this happens
+//  char *command = command_queue[cmd_queue_index_w];
+//  strcpy(command, cmd);
+//  SERIAL_ECHO_START;
+//  SERIAL_ECHOPGM(MSG_Enqueueing);
+//  SERIAL_ECHO(command);
+//  SERIAL_ECHOLNPGM("\"");
+//  cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
+//  commands_in_queue++;
+//  return true;
+//}
+/*******************************************************************************************************/
 
-  if (*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
 
-  // This is dangerous if a mixing of serial and this happens
-  char *command = command_queue[cmd_queue_index_w];
-  strcpy(command, cmd);
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPGM(MSG_Enqueueing);
-  SERIAL_ECHO(command);
-  SERIAL_ECHOLNPGM("\"");
-  cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
-  commands_in_queue++;
-  return true;
-}
+
 
 void setup_killpin() {
   #if HAS_KILL
@@ -2480,7 +2568,7 @@ inline void gcode_G28() {
       case MeshStart:
         mbl.reset();
         probe_point = 0;
-        enqueuecommands_P(PSTR("G28\nG29 S2"));
+        enqueue_and_echo_commands_P(PSTR("G28\nG29 S2"));
         break;
 
       case MeshNext:
@@ -2519,7 +2607,7 @@ inline void gcode_G28() {
           SERIAL_PROTOCOLLNPGM("Mesh probing done.");
           probe_point = -1;
           mbl.active = 1;
-          enqueuecommands_P(PSTR("G28"));
+          enqueue_and_echo_commands_P(PSTR("G28"));
         }
         break;
 
@@ -2962,7 +3050,7 @@ inline void gcode_G28() {
     #endif
 
     #ifdef Z_PROBE_END_SCRIPT
-      enqueuecommands_P(PSTR(Z_PROBE_END_SCRIPT));
+      enqueue_and_echo_commands_P(PSTR(Z_PROBE_END_SCRIPT));
       st_synchronize();
     #endif
   }
@@ -5242,7 +5330,7 @@ inline void gcode_M428() {
         SERIAL_ERRORLNPGM(MSG_ERR_M428_TOO_FAR);
         LCD_ALERTMESSAGEPGM("Err: Too far!");
         #if HAS_BUZZER
-          enqueuecommands_P(PSTR("M300 S40 P200"));
+          enqueue_and_echo_commands_P(PSTR("M300 S40 P200"));
         #endif
         err = true;
         break;
@@ -5256,7 +5344,7 @@ inline void gcode_M428() {
     sync_plan_position();
     LCD_ALERTMESSAGEPGM("Offset applied.");
     #if HAS_BUZZER
-      enqueuecommands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
+      enqueue_and_echo_commands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
     #endif
   }
 }
@@ -7033,7 +7121,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     const int HOME_DEBOUNCE_DELAY = 750;
     if (!READ(HOME_PIN)) {
       if (!homeDebounceCount) {
-        enqueuecommands_P(PSTR("G28"));
+        enqueue_and_echo_commands_P(PSTR("G28"));
         LCD_MESSAGEPGM(MSG_AUTO_HOME);
       }
       if (homeDebounceCount < HOME_DEBOUNCE_DELAY)
@@ -7153,7 +7241,7 @@ void kill(const char *lcd_msg) {
   void filrunout() {
     if (!filrunoutEnqueued) {
       filrunoutEnqueued = true;
-      enqueuecommands_P(PSTR(FILAMENT_RUNOUT_SCRIPT));
+      enqueue_and_echo_commands_P(PSTR(FILAMENT_RUNOUT_SCRIPT));
       st_synchronize();
     }
   }

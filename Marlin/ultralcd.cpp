@@ -460,7 +460,7 @@ static void lcd_main_menu() {
  */
 void lcd_set_home_offsets() {
   // M428 Command
-  enqueuecommands_P(PSTR("M428"));
+  enqueue_and_echo_commands_P(PSTR("M428"));
   lcd_return_to_status();
 }
 
@@ -1317,7 +1317,7 @@ menu_edit_type(unsigned long, long5, ftostr5, 0.01)
     lcd_move_y();
   }
   static void reprapworld_keypad_move_home() {
-    enqueuecommands_P((PSTR("G28"))); // move all axis home
+    enqueue_and_echo_commands_P((PSTR("G28"))); // move all axis home
   }
 #endif // REPRAPWORLD_KEYPAD
 
@@ -1369,7 +1369,7 @@ void lcd_quick_feedback() {
  */
 static void menu_action_back(menuFunc_t func) { lcd_goto_menu(func); }
 static void menu_action_submenu(menuFunc_t func) { lcd_goto_menu(func); }
-static void menu_action_gcode(const char* pgcode) { enqueuecommands_P(pgcode); }
+static void menu_action_gcode(const char* pgcode) { enqueue_and_echo_commands_P(pgcode); }
 static void menu_action_function(menuFunc_t func) { (*func)(); }
 #ifdef SDSUPPORT
 static void menu_action_sdfile(const char* filename, char* longFilename) {
@@ -1377,8 +1377,8 @@ static void menu_action_sdfile(const char* filename, char* longFilename) {
   char* c;
   sprintf_P(cmd, PSTR("M23 %s"), filename);
   for(c = &cmd[4]; *c; c++) *c = tolower(*c);
-  enqueuecommand(cmd);
-  enqueuecommands_P(PSTR("M24"));
+  _enqueuecommand(cmd);
+  enqueue_and_echo_commands_P(PSTR("M24"));
   lcd_return_to_status();
 }
 static void menu_action_sddirectory(const char* filename, char* longFilename) {
@@ -2057,7 +2057,7 @@ char *ftostr52(const float &x) {
           current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
           line_to_current(Z_AXIS);
           mbl.active = 1;
-          enqueuecommands_P(PSTR("G28"));
+          enqueue_and_echo_commands_P(PSTR("G28"));
           lcd_return_to_status();
         }
         else {
@@ -2101,7 +2101,7 @@ char *ftostr52(const float &x) {
   static void lcd_level_bed() {
     axis_known_position[X_AXIS] = axis_known_position[Y_AXIS] = axis_known_position[Z_AXIS] = false;
     mbl.reset();
-    enqueuecommands_P(PSTR("G28"));
+    enqueue_and_echo_commands_P(PSTR("G28"));
     lcdDrawUpdate = 2;
     lcd_goto_menu(_lcd_level_bed_homing);
   }

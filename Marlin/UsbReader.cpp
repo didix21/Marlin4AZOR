@@ -120,8 +120,8 @@ void UsbReader::checkAutoStart (bool force) {
     if (p.name[9] != '~' && strncmp((char*)p.name, autoname, 5) == 0) {
       char cmd[4 + (FILENAME_LENGTH + 1) * MAX_DIR_DEPTH + 2];
       sprintf_P(cmd, PSTR("M23 %s"), autoname);
-      enqueuecommand(cmd);
-      enqueuecommands_P(PSTR("M24"));
+      _enqueuecommand(cmd);
+      enqueue_and_echo_commands_P(PSTR("M24"));
       found = true;
     }
   }
@@ -407,7 +407,7 @@ void UsbReader::printingHasFinished() {
     usbprinting = false;
     if (USB_FINISHED_STEPPERRELEASE) {
       //finishAndDisableSteppers(); /* Commented by default */ 
-      enqueuecommands_P(PSTR(USB_FINISHED_RELEASECOMMAND));
+      enqueue_and_echo_commands_P(PSTR(USB_FINISHED_RELEASECOMMAND));
     }
     autotempShutdown();
   }
