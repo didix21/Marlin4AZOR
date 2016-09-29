@@ -248,7 +248,8 @@ static long gcode_N, gcode_LastN, Stopped_gcode_LastN = 0;
 static char *current_command, *current_command_args;
 static int cmd_queue_index_r = 0;
 static int cmd_queue_index_w = 0;
-static int commands_in_queue = 0;
+static int commands_in_queue = 0; // Commands from TFT LCD
+static int commands_in_queue_pc = 0; // Commands from PC
 static char command_queue[BUFSIZE][MAX_CMD_SIZE];
 
 const float homing_feedrate[] = HOMING_FEEDRATE;
@@ -642,8 +643,7 @@ void setup() {
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
 
-  analogWrite(FAN1_PIN,255);
-
+  
   // Check startup - does nothing if bootloader sets MCUSR to 0
   byte mcu = MCUSR;
   if (mcu & 1) SERIAL_ECHOLNPGM(MSG_POWERUP);
@@ -734,6 +734,7 @@ void setup() {
  */
 
 void loop() {
+  digitalWrite(77,LOW);
   if((REG_UOTGHS_SR & MASK_MICROUSB_CONNECTED) && !card.sdprinting){
     if (!canBeSwitch) {
       canBeSwitch = true;
@@ -746,8 +747,8 @@ void loop() {
     }
   }
   
-  static millis_t microusb_ms = 0;
-  if (millis() - microusb_ms > 2500){
+  static millis_t microusb_ms = 0; 
+  if (millis() - microusb_ms > 2500){ // Assures each 2.5 s sends the microUSB State
     MYSERIAL.print("{\"microusb\":");
     MYSERIAL.print(canBeSwitch ? 1 : 0);
     MYSERIAL.println("}**");
@@ -755,6 +756,7 @@ void loop() {
   }
 
   if (commands_in_queue < BUFSIZE - 1) get_command();
+  //if (commands_in_queue < BUFSIZE - 1) get_command_pc();
   
   #ifdef SDSUPPORT
     card.checkautostart(false);
@@ -987,6 +989,15 @@ void get_command() {
       }
     }
   #endif // SDSUPPORT
+}
+
+/**
+ * Add to the circular command PC queue the next command from:
+ * - PC
+ */
+
+void get_command_pc() {
+  
 }
 
 bool code_has_value() {
