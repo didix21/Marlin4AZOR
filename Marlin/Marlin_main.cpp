@@ -233,6 +233,10 @@
 #ifdef SDSUPPORT
   CardReader card;
 #endif
+
+
+bool whoToSend = SEND_TO_SCREEN;
+
 bool canBeSwitch = false;
 bool Running = true;
 
@@ -247,10 +251,13 @@ static long gcode_N, gcode_LastN, Stopped_gcode_LastN = 0;
 
 static char *current_command, *current_command_args;
 static int cmd_queue_index_r = 0;
+static int cmd_queue_index_pc_r = 0;
 static int cmd_queue_index_w = 0;
+static int cmd_queue_index_pc_w = 0;
 static int commands_in_queue = 0; // Commands from TFT LCD
 static int commands_in_queue_pc = 0; // Commands from PC
 static char command_queue[BUFSIZE][MAX_CMD_SIZE];
+static char command_queue_pc[BUFSIZE][MAX_CMD_SIZE];
 
 const float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
@@ -274,7 +281,9 @@ const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
 
 static bool relative_mode = false;  //Determines Absolute or Relative Coordinates
 static char serial_char;
+static char serialUSB_char;
 static int serial_count = 0;
+static int serialUSB_count = 0;
 static boolean comment_mode = false;
 static char *seen_pointer; ///< A pointer to find chars in the command string (X, Y, Z, E, etc.)
 const char* queued_commands_P= NULL; /* pointer to the current line in the active sequence of commands, or NULL when none */
@@ -756,13 +765,13 @@ void loop() {
   }
 
   if (commands_in_queue < BUFSIZE - 1) get_command();
-  //if (commands_in_queue < BUFSIZE - 1) get_command_pc();
+  if (commands_in_queue_pc < BUFSIZE - 1) get_command_pc();
   
   #ifdef SDSUPPORT
     card.checkautostart(false);
   #endif
 
-  if (commands_in_queue) {
+  if (commands_in_queue) { // Commands come from Screen
 
     #ifdef SDSUPPORT
 
@@ -793,6 +802,9 @@ void loop() {
 
     commands_in_queue--;
     cmd_queue_index_r = (cmd_queue_index_r + 1) % BUFSIZE;
+  }
+  if (commands_in_queue_pc) { // Commands come from PC
+    
   }
   checkHitEndstops();
   idle();
@@ -995,8 +1007,172 @@ void get_command() {
  * Add to the circular command PC queue the next command from:
  * - PC
  */
-
 void get_command_pc() {
+  if (drain_queued_commands_P()) return; // priority is given to non-serial commands
+
+  #ifdef NO_TIMEOUS
+    static millis_t last_command_time = 0;
+    millis_t ms = millis();
+
+    if(!MYSERIAL_MICROUSB.available() && commands_in_queue_pc == 0 && ms - last_command_time > NO_TIMEOUTS) {
+      SERIAL_ECHOLNPGM(MSG_WAIT); // Implement variable whoToSend = True, to send it PC
+      last_command_time = ms;
+    }
+  #endif
+
+  //
+  // Loop while serialUSB characters are incoming and the queue is not full
+  //
+  while (commands_in_queue_pc < BUFSIZE && (MYSERIAL_MICROUSB.available() > 0)) {
+    #ifdef NO_TIMEOUTS
+      last_command_time = ms;
+    #endif
+
+    serialUSB_char = MYSERIAL_MICROUSB.read();
+
+    //
+    // If the character ends the line, or he line is full...
+    //
+    if (serialUSB_char == '\n' || serialUSB_char == '\r' || serial_count >= MAX_CMD_SIZE - 1) {
+      // end of line == end of comment
+      comment_mode = false;
+
+      if (!serialUSB_count) return; // empty lines just exit
+
+      char *command = command_queue_pc[cmd_queue_index_pc_w];
+      command[serialUSB_count] = 0; // terminate string
+
+      char *npos = strchr(command, 'N');
+      char *apos = strchr(command, '*');
+      if(npos) {
+        boolean M110 = strstr_P(command, PSTR("M110")) != NULL;
+
+        if (M110) {
+          char *n2pos = strchr(command + 4, 'N');
+          if (n2pos) npos = n2pos;
+        }
+
+        //gcode_N = strtol(npos + 1, NULL, 10);
+
+//        if (gcode_N != gcode_LastN + 1 && !M110) {
+//          gcode_line_error(PSTR(MSG_ERR_LINE_NO));
+//          return;
+//        }
+
+        if (apos) {
+          byte checksum = 0, count = 0;
+          while (command[count] != '*') checksum ^= command[count++];
+
+          if (strtol(apos + 1, NULL, 10) != checksum) {
+            gcode_line_error(PSTR(MSG_ERR_CHECKSUM_MISMATCH));
+            return;
+          }
+          // if no errors, continue parsing
+        }
+        else if (npos == command) { // '*' without 'N'
+          gcode_line_error(PSTR(MSG_ERR_NO_CHECKSUM));
+          return;
+        }
+        //gcode_LastN = gcode_N;
+        // if no errors, continue parsing
+      }
+      else if (apos) { // No '*' without 'N'
+        gcode_line_error(PSTR(MSG_ERR_NO_LINENUMBER_WITH_CHECKSUM), false);
+        return;
+      }
+
+      // Movement commands alert when stopped
+      if(IsStopped()) {
+        char *gpos = strchr(command, 'G');
+        if (gpos) {
+          int codenum = strtol(gpos + 1, NULL, 10);
+          switch (codenum) {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+              SERIAL_ERRORLNPGM(MSG_ERR_STOPPED);
+              break;
+          }
+        }
+      }
+
+      // If command was e-stop process now
+      if (strcmp(command, "M112") == 0) kill(PSTR(MSG_KILLED));
+
+      cmd_queue_index_pc_w = (cmd_queue_index_pc_w + 1) % BUFSIZE;
+      commands_in_queue_pc += 1;
+
+      serialUSB_count = 0; //clear buffer
+    }
+    else if (serialUSB_char == '\\') { // Handle escapes
+      if (MYSERIAL_MICROUSB.available() && commands_in_queue < BUFSIZE) {
+        // if we have one more character, copy it over
+        serialUSB_char = MYSERIAL_MICROUSB.read();
+        command_queue_pc[cmd_queue_index_pc_w][serialUSB_count++] = serialUSB_char;
+      }
+      // otherwise do nothing
+    }
+    else { // its not a newline, carriage return or escape char 
+      if (serialUSB_char == ';') comment_mode = true;
+      if (!comment_mode) command_queue_pc[cmd_queue_index_pc_w][serialUSB_count++] = serialUSB_char;
+    }
+  }
+
+//    #ifdef SDSUPPORT
+//  
+//    if (!card.sdprinting || serial_count) return;
+//
+//    // '#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
+//    // if it occurs, stop_buffering is triggered and the buffer is ran dry.
+//    // this character _can_ occur in serial com, due to checksums. however, no checksums are used in SD printing
+//
+//    static bool stop_buffering = false;
+//    if (commands_in_queue == 0) stop_buffering = false;
+//
+//    while (!card.eof() && commands_in_queue < BUFSIZE && !stop_buffering) {
+//      int16_t n = card.get();
+//      serial_char = (char)n;
+//      
+//      if (serial_char == '\n' || serial_char == '\r' ||
+//          ((serial_char == '#' || serial_char == ':') && !comment_mode) ||
+//          serial_count >= (MAX_CMD_SIZE - 1) || n == -1
+//      ) {
+//
+//        if (card.eof()) {
+//          SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
+//          print_job_stop_ms = millis();
+//          char time[30];
+//          millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
+//          int hours = t / 60 / 60, minutes = (t / 60) % 60;
+//          sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
+//          SERIAL_ECHO_START;
+//          SERIAL_ECHOLN(time);
+//          lcd_setstatus(time, true);
+//          card.printingHasFinished();
+//          card.checkautostart(true);
+//        }
+//        if (serial_char == '#') stop_buffering = true;
+//
+//        if (!serial_count) {
+//          comment_mode = false; //for new command
+//          return; //if empty line
+//        }
+//        
+//        command_queue[cmd_queue_index_pc_w][serial_count] = 0; //terminate string
+//         if (!comment_mode) {
+//        fromsd[cmd_queue_index_pc_w] = true;
+//        commands_in_queue += 1;
+//        cmd_queue_index_pc_w = (cmd_queue_index_pc_w + 1) % BUFSIZE;
+//         }
+//        comment_mode = false; //for new command
+//        serial_count = 0; //clear buffer
+//      } else {
+//        if (serial_char == ';') comment_mode = true;
+//        if (!comment_mode) command_queue[cmd_queue_index_pc_w][serial_count++] = serial_char;
+//      }
+//    }
+//  #endif // SDSUPPORT
   
 }
 
