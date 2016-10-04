@@ -235,7 +235,7 @@
 #endif
 
 
-bool whoToSend = SEND_TO_SCREEN;
+bool whoToSend = TO_SCREEN;
 
 bool canBeSwitch = false;
 bool Running = true;
@@ -423,7 +423,7 @@ bool target_direction;
 //================================ Functions ================================
 //===========================================================================
 
-void process_next_command();
+void process_next_command(bool comesFrom);
 
 void plan_arc(float target[NUM_AXIS], float *offset, uint8_t clockwise);
 
@@ -507,7 +507,8 @@ void enqueuecommands_P(const char* pgcode) {
  */
 bool enqueuecommand(const char *cmd) {
 
-  if (*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
+  if (*cmd == ';' || commands_in_queue >= BUFSIZE || commands_in_queue_pc >= BUFSIZE) return false;
+  
 
   // This is dangerous if a mixing of serial and this happens
   char *command = command_queue[cmd_queue_index_w];
@@ -641,14 +642,19 @@ void setup() {
   MYSERIAL.begin(BAUDRATE);
   MYSERIAL_MICROUSB.begin(BAUDRATE);
   
-  while(!MYSERIAL_MICROUSB && !MYSERIAL);
+  while(!MYSERIAL_MICROUSB);
   
-  if(REG_UOTGHS_SR & MASK_MICROUSB_CONNECTED) 
-    canBeSwitch = true;
-  else
+  if(REG_UOTGHS_SR & MASK_MICROUSB_CONNECTED) {
+     canBeSwitch = true;
+     whoToSend = TO_PC;
+  }
+  else {
     canBeSwitch = false;
+    whoToSend = TO_SCREEN;
+  }
+    
 
-  canBeSwitch ? MYSERIAL_MICROUSB.println("The Printer is Ready") : MYSERIAL.println("The Printer is Ready");
+  whoToSend ? MYSERIAL_MICROUSB.println("The Printer is Ready") : MYSERIAL.println("The Printer is Ready");
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
 
@@ -744,7 +750,7 @@ void setup() {
 
 void loop() {
   digitalWrite(77,LOW);
-  if((REG_UOTGHS_SR & MASK_MICROUSB_CONNECTED) && !card.sdprinting){
+  if((REG_UOTGHS_SR & MASK_MICROUSB_CONNECTED)){
     if (!canBeSwitch) {
       canBeSwitch = true;
       MYSERIAL.println("{\"microusb\":1}");
@@ -764,8 +770,8 @@ void loop() {
     microusb_ms = millis();
   }
 
-  if (commands_in_queue < BUFSIZE - 1) get_command();
-  if (commands_in_queue_pc < BUFSIZE - 1) get_command_pc();
+  if (commands_in_queue < BUFSIZE - 1) get_command(); // Screen
+  if (commands_in_queue_pc < BUFSIZE - 1) get_command_pc(); // PC
   
   #ifdef SDSUPPORT
     card.checkautostart(false);
@@ -786,17 +792,17 @@ void loop() {
           // Write the string from the read buffer to SD
           card.write_command(command);
           if (card.logging)
-            process_next_command(); // The card is saving because it's logging
+            process_next_command(TO_SCREEN); // The card is saving because it's logging
           else
             SERIAL_PROTOCOLLNPGM(MSG_OK);
         }
       }
       else
-        process_next_command();
+        process_next_command(TO_SCREEN);
 
     #else
 
-      process_next_command();
+      process_next_command(TO_SCREEN);
 
     #endif // SDSUPPORT
 
@@ -805,17 +811,53 @@ void loop() {
   }
   if (commands_in_queue_pc) { // Commands come from PC
     
+    whoToSend = TO_PC; // Enables Send commands to the pc
+    
+    #ifdef SDSUPPORT
+
+      if (card.saving) {
+        char *command_pc = command_queue_pc[cmd_queue_index_pc_r];
+        if (strstr_P(command_pc, PSTR("M29"))) {
+          // M29 closes the file
+          card.closefile();
+          SERIAL_PROTOCOLLNPGM(MSG_FILE_SAVED);
+        }
+        else {
+          // Write the string from the read buffer to SD
+          card.write_command(command_pc);
+          if (card.logging) 
+            process_next_command(TO_PC); // The card is saving because it's logging
+          else
+            SERIAL_PROTOCOLLNPGM(MSG_OK);
+        }
+      }
+      else
+        process_next_command(TO_PC);
+    
+    #else
+
+      process_next_command(TO_PC);
+      
+    #endif //SDSUPPORT
+    
+    commands_in_queue_pc--;
+    cmd_queue_index_pc_r = (cmd_queue_index_pc_r + 1) % BUFSIZE;
   }
   checkHitEndstops();
   idle();
 }
 
 void gcode_line_error(const char *err, bool doFlush=true) {
+  // Send to the Screen always
+  whoToSend = TO_SCREEN;
   SERIAL_ERROR_START;
   serialprintPGM(err);
   SERIAL_ERRORLN(gcode_LastN);
   if (doFlush) FlushSerialRequestResend();
-  serial_count = 0;
+  if(whoToSend)
+    serialUSB_count = 0;
+  else
+    serial_count = 0;
 }
 
 /**
@@ -825,14 +867,17 @@ void gcode_line_error(const char *err, bool doFlush=true) {
  *  - The SD card file being actively printed
  */
 void get_command() {
-
+  
   if (drain_queued_commands_P()) return; // priority is given to non-serial commands
+  
+  whoToSend = TO_SCREEN;
+  
   
   #ifdef NO_TIMEOUTS
     static millis_t last_command_time = 0;
     millis_t ms = millis();
   
-    if ((canBeSwitch ? !MYSERIAL_MICROUSB.available() : !MYSERIAL.available()) && commands_in_queue == 0 && ms - last_command_time > NO_TIMEOUTS) {
+    if ((whoToSend ? !MYSERIAL_MICROUSB.available() : !MYSERIAL.available()) && commands_in_queue == 0 && ms - last_command_time > NO_TIMEOUTS) {
       SERIAL_ECHOLNPGM(MSG_WAIT);
       last_command_time = ms;
     }
@@ -841,13 +886,13 @@ void get_command() {
   //
   // Loop while serial characters are incoming and the queue is not full
   //
-  while (commands_in_queue < BUFSIZE && (canBeSwitch ? MYSERIAL_MICROUSB.available() : MYSERIAL.available()) > 0) {
+  while (commands_in_queue < BUFSIZE && (whoToSend ? MYSERIAL_MICROUSB.available() : MYSERIAL.available()) > 0) {
 
     #ifdef NO_TIMEOUTS
       last_command_time = ms;
     #endif
 
-    serial_char = (canBeSwitch ? MYSERIAL_MICROUSB.read() : MYSERIAL.read());
+    serial_char = (whoToSend ? MYSERIAL_MICROUSB.read() : MYSERIAL.read());
 
     //
     // If the character ends the line, or the line is full...
@@ -934,9 +979,9 @@ void get_command() {
       serial_count = 0; //clear buffer
     }
     else if (serial_char == '\\') {  // Handle escapes
-      if ((canBeSwitch ? MYSERIAL_MICROUSB.available() : MYSERIAL.available()) > 0 && commands_in_queue < BUFSIZE) {
+      if ((whoToSend ? MYSERIAL_MICROUSB.available() : MYSERIAL.available()) > 0 && commands_in_queue < BUFSIZE) {
         // if we have one more character, copy it over
-        serial_char = (canBeSwitch ? MYSERIAL_MICROUSB.read() : MYSERIAL.read());
+        serial_char = (whoToSend ? MYSERIAL_MICROUSB.read() : MYSERIAL.read());
         command_queue[cmd_queue_index_w][serial_count++] = serial_char;
       }
       // otherwise do nothing
@@ -1008,8 +1053,13 @@ void get_command() {
  * - PC
  */
 void get_command_pc() {
+  //MYSERIAL_MICROUSB.print("B");
   if (drain_queued_commands_P()) return; // priority is given to non-serial commands
-
+  //if (commands_in_queue) return;
+  //MYSERIAL_MICROUSB.print("A");
+  whoToSend = TO_PC;
+  
+  
   #ifdef NO_TIMEOUS
     static millis_t last_command_time = 0;
     millis_t ms = millis();
@@ -1037,7 +1087,10 @@ void get_command_pc() {
       // end of line == end of comment
       comment_mode = false;
 
-      if (!serialUSB_count) return; // empty lines just exit
+      if (!serialUSB_count){
+        //whoToSend = TO_SCREEN;
+        return; // empty lines just exit
+      }
 
       char *command = command_queue_pc[cmd_queue_index_pc_w];
       command[serialUSB_count] = 0; // terminate string
@@ -1052,12 +1105,13 @@ void get_command_pc() {
           if (n2pos) npos = n2pos;
         }
 
-        //gcode_N = strtol(npos + 1, NULL, 10);
+        gcode_N = strtol(npos + 1, NULL, 10);
 
-//        if (gcode_N != gcode_LastN + 1 && !M110) {
-//          gcode_line_error(PSTR(MSG_ERR_LINE_NO));
-//          return;
-//        }
+        if (gcode_N != gcode_LastN + 1 && !M110) {
+          gcode_line_error(PSTR(MSG_ERR_LINE_NO));
+          //whoToSend = TO_SCREEN;
+          return;
+        }
 
         if (apos) {
           byte checksum = 0, count = 0;
@@ -1119,61 +1173,61 @@ void get_command_pc() {
     }
   }
 
-//    #ifdef SDSUPPORT
-//  
-//    if (!card.sdprinting || serial_count) return;
-//
-//    // '#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
-//    // if it occurs, stop_buffering is triggered and the buffer is ran dry.
-//    // this character _can_ occur in serial com, due to checksums. however, no checksums are used in SD printing
-//
-//    static bool stop_buffering = false;
-//    if (commands_in_queue == 0) stop_buffering = false;
-//
-//    while (!card.eof() && commands_in_queue < BUFSIZE && !stop_buffering) {
-//      int16_t n = card.get();
-//      serial_char = (char)n;
-//      
-//      if (serial_char == '\n' || serial_char == '\r' ||
-//          ((serial_char == '#' || serial_char == ':') && !comment_mode) ||
-//          serial_count >= (MAX_CMD_SIZE - 1) || n == -1
-//      ) {
-//
-//        if (card.eof()) {
-//          SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
-//          print_job_stop_ms = millis();
-//          char time[30];
-//          millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
-//          int hours = t / 60 / 60, minutes = (t / 60) % 60;
-//          sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
-//          SERIAL_ECHO_START;
-//          SERIAL_ECHOLN(time);
-//          lcd_setstatus(time, true);
-//          card.printingHasFinished();
-//          card.checkautostart(true);
-//        }
-//        if (serial_char == '#') stop_buffering = true;
-//
-//        if (!serial_count) {
-//          comment_mode = false; //for new command
-//          return; //if empty line
-//        }
-//        
-//        command_queue[cmd_queue_index_pc_w][serial_count] = 0; //terminate string
-//         if (!comment_mode) {
-//        fromsd[cmd_queue_index_pc_w] = true;
-//        commands_in_queue += 1;
-//        cmd_queue_index_pc_w = (cmd_queue_index_pc_w + 1) % BUFSIZE;
-//         }
-//        comment_mode = false; //for new command
-//        serial_count = 0; //clear buffer
-//      } else {
-//        if (serial_char == ';') comment_mode = true;
-//        if (!comment_mode) command_queue[cmd_queue_index_pc_w][serial_count++] = serial_char;
-//      }
-//    }
-//  #endif // SDSUPPORT
+    #ifdef SDSUPPORT
   
+    if (!card.sdprinting || serialUSB_count) return;
+
+    // '#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
+    // if it occurs, stop_buffering is triggered and the buffer is ran dry.
+    // this character _can_ occur in serial com, due to checksums. however, no checksums are used in SD printing
+
+    static bool stop_buffering = false;
+    if (commands_in_queue_pc == 0) stop_buffering = false;
+
+    while (!card.eof() && commands_in_queue_pc < BUFSIZE && !stop_buffering) {
+      int16_t n = card.get();
+      serialUSB_char = (char)n;
+      
+      if (serialUSB_char == '\n' || serialUSB_char == '\r' ||
+          ((serialUSB_char == '#' || serialUSB_char == ':') && !comment_mode) ||
+          serialUSB_count >= (MAX_CMD_SIZE - 1) || n == -1
+      ) {
+
+        if (card.eof()) {
+          SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
+          print_job_stop_ms = millis();
+          char time[30];
+          millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
+          int hours = t / 60 / 60, minutes = (t / 60) % 60;
+          sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
+          SERIAL_ECHO_START;
+          SERIAL_ECHOLN(time);
+          lcd_setstatus(time, true);
+          card.printingHasFinished();
+          card.checkautostart(true);
+        }
+        if (serialUSB_char == '#') stop_buffering = true;
+
+        if (!serialUSB_count) {
+          comment_mode = false; //for new command
+          return; //if empty line
+        }
+        
+        command_queue_pc[cmd_queue_index_pc_w][serial_count] = 0; //terminate string
+         if (!comment_mode) {
+        fromsd[cmd_queue_index_pc_w] = true;
+        commands_in_queue_pc += 1;
+        cmd_queue_index_pc_w = (cmd_queue_index_pc_w + 1) % BUFSIZE;
+         }
+        comment_mode = false; //for new command
+        serialUSB_count = 0; //clear buffer
+      } else {
+        if (serialUSB_char == ';') comment_mode = true;
+        if (!comment_mode) command_queue_pc[cmd_queue_index_pc_w][serial_count++] = serial_char;
+      }
+    }
+  #endif // SDSUPPORT
+ // whoToSend = TO_SCREEN;
 }
 
 bool code_has_value() {
@@ -5825,8 +5879,15 @@ inline void gcode_T(uint8_t tmp_extruder) {
  * Process a single command and dispatch it to its handler
  * This is called from the main loop()
  */
-void process_next_command() {
-  current_command = command_queue[cmd_queue_index_r];
+void process_next_command(bool comesFrom) {
+  if(comesFrom){
+    current_command = command_queue_pc[cmd_queue_index_pc_r];
+    whoToSend = TO_PC;
+  }else {
+    current_command = command_queue[cmd_queue_index_r];
+    whoToSend = TO_SCREEN;
+  }
+  
 
   if ((marlin_debug_flags & DEBUG_ECHO)) {
     SERIAL_ECHO_START;
@@ -6398,7 +6459,7 @@ ExitUnknownCommand:
 
 void FlushSerialRequestResend() {
   //char command_queue[cmd_queue_index_r][100]="Resend:";
-  (canBeSwitch ? MYSERIAL_MICROUSB.flush() : MYSERIAL.flush());
+  (whoToSend ? MYSERIAL_MICROUSB.flush() : MYSERIAL.flush());
   SERIAL_PROTOCOLPGM(MSG_RESEND);
   SERIAL_PROTOCOLLN(gcode_LastN + 1);
   ok_to_send();
@@ -6407,7 +6468,10 @@ void FlushSerialRequestResend() {
 void ok_to_send() {
   refresh_cmd_timeout();
   #ifdef SDSUPPORT
-    if (fromsd[cmd_queue_index_r]) return;
+    if (whoToSend)
+      if (fromsd[cmd_queue_index_pc_r]) return;
+    else
+      if (fromsd[cmd_queue_index_r]) return;
   #endif
   SERIAL_PROTOCOLPGM(MSG_OK);
   #ifdef ADVANCED_OK

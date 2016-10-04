@@ -49,12 +49,12 @@ typedef unsigned long millis_t;
   #define MYSERIAL_MICROUSB SerialUSB
 #endif 
 
-#ifndef SEND_TO_PC
-  #define SEND_TO_PC true
+#ifndef TO_PC
+  #define TO_PC true
 #endif
 
-#ifndef SEND_TO_SCREEN
-  #define SEND_TO_SCREEN false
+#ifndef TO_SCREEN
+  #define TO_SCREEN false
 #endif
 
 extern bool canBeSwitch;
@@ -72,16 +72,9 @@ extern bool whoToSend;
   #endif // BTENABLED
 #else
   #define MYSERIAL Serial
-//  #ifndef MYSERIAL
-//    #if serialType == 0 // Set up serial type on configuration.h
-//      #define MYSERIAL Serial
-//    #elif serialType == 1
-//      #define MYSERIAL SerialUSB
-//    #endif
-//  #endif
 #endif
 
-#define SERIAL_CHAR(x) ((canBeSwitch) ? MYSERIAL_MICROUSB.write(x) : MYSERIAL.write(x))
+#define SERIAL_CHAR(x) ((whoToSend) ? MYSERIAL_MICROUSB.write(x) : MYSERIAL.write(x))
 #define SERIAL_EOL SERIAL_CHAR('\n')
 
 #define SERIAL_PROTOCOLCHAR(x) SERIAL_CHAR(x)

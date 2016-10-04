@@ -343,38 +343,38 @@ int8_t SdBaseFile::lsPrintNext( uint8_t flags, uint8_t indent) {
       && DIR_IS_FILE_OR_SUBDIR(&dir)) break;
   }
   // indent for dir level
-  for (uint8_t i = 0; i < indent; i++) (canBeSwitch ? MYSERIAL_MICROUSB.write(' ') : MYSERIAL.write(' '));
+  for (uint8_t i = 0; i < indent; i++) (whoToSend ? MYSERIAL_MICROUSB.write(' ') : MYSERIAL.write(' '));
 
   // print name
   for (uint8_t i = 0; i < 11; i++) {
     if (dir.name[i] == ' ')continue;
     if (i == 8) {
-      canBeSwitch ? MYSERIAL_MICROUSB.write('.') : MYSERIAL.write('.');
+      whoToSend ? MYSERIAL_MICROUSB.write('.') : MYSERIAL.write('.');
       w++;
     }
-    canBeSwitch ? MYSERIAL_MICROUSB.write(dir.name[i]) : MYSERIAL.write(dir.name[i]);
+    whoToSend ? MYSERIAL_MICROUSB.write(dir.name[i]) : MYSERIAL.write(dir.name[i]);
     w++;
   }
   if (DIR_IS_SUBDIR(&dir)) {
-    canBeSwitch ? MYSERIAL_MICROUSB.write('/') : MYSERIAL.write('/');
+    whoToSend ? MYSERIAL_MICROUSB.write('/') : MYSERIAL.write('/');
     w++;
   }
   if (flags & (LS_DATE | LS_SIZE)) {
-    while (w++ < 14) canBeSwitch ? MYSERIAL_MICROUSB.write(' ') : MYSERIAL.write(' ');
+    while (w++ < 14) whoToSend ? MYSERIAL_MICROUSB.write(' ') : MYSERIAL.write(' ');
   }
   // print modify date/time if requested
   if (flags & LS_DATE) {
-    canBeSwitch ? MYSERIAL_MICROUSB.write(' ') : MYSERIAL.write(' ');
+    whoToSend ? MYSERIAL_MICROUSB.write(' ') : MYSERIAL.write(' ');
     printFatDate( dir.lastWriteDate);
-    canBeSwitch ? MYSERIAL_MICROUSB.write(' ') : MYSERIAL.write(' ');
+    whoToSend ? MYSERIAL_MICROUSB.write(' ') : MYSERIAL.write(' ');
     printFatTime( dir.lastWriteTime);
   }
   // print size if requested
   if (!DIR_IS_SUBDIR(&dir) && (flags & LS_SIZE)) {
-    canBeSwitch ? MYSERIAL_MICROUSB.write(' ') : MYSERIAL.write(' ');
-    canBeSwitch ? MYSERIAL_MICROUSB.print(dir.fileSize) : MYSERIAL.print(dir.fileSize);
+    whoToSend ? MYSERIAL_MICROUSB.write(' ') : MYSERIAL.write(' ');
+    whoToSend ? MYSERIAL_MICROUSB.print(dir.fileSize) : MYSERIAL.print(dir.fileSize);
   }
-  canBeSwitch ? MYSERIAL_MICROUSB.println() : MYSERIAL.println();
+  whoToSend ? MYSERIAL_MICROUSB.println() : MYSERIAL.println();
   return DIR_IS_FILE(&dir) ? 1 : 2;
 }
 //------------------------------------------------------------------------------
@@ -956,26 +956,26 @@ void SdBaseFile::printDirName(const dir_t& dir,
   for (uint8_t i = 0; i < 11; i++) {
     if (dir.name[i] == ' ')continue;
     if (i == 8) {
-      canBeSwitch ? MYSERIAL_MICROUSB.write('.') : MYSERIAL.write('.');
+      whoToSend ? MYSERIAL_MICROUSB.write('.') : MYSERIAL.write('.');
       w++;
     }
-    canBeSwitch ? MYSERIAL_MICROUSB.write(dir.name[i]) : MYSERIAL.write(dir.name[i]);
+    whoToSend ? MYSERIAL_MICROUSB.write(dir.name[i]) : MYSERIAL.write(dir.name[i]);
     w++;
   }
   if (DIR_IS_SUBDIR(&dir) && printSlash) {
-    canBeSwitch ? MYSERIAL_MICROUSB.write('/') : MYSERIAL.write('/');
+    whoToSend ? MYSERIAL_MICROUSB.write('/') : MYSERIAL.write('/');
     w++;
   }
   while (w < width) {
-    canBeSwitch ? MYSERIAL_MICROUSB.write(' ') : MYSERIAL.write(' ');
+    whoToSend ? MYSERIAL_MICROUSB.write(' ') : MYSERIAL.write(' ');
     w++;
   }
 }
 //------------------------------------------------------------------------------
 // print uint8_t with width 2
 static void print2u( uint8_t v) {
-  if (v < 10) (canBeSwitch ? MYSERIAL_MICROUSB.write('0') :  MYSERIAL.write('0'));
-  canBeSwitch ? MYSERIAL_MICROUSB.print(v, DEC) : MYSERIAL.print(v, DEC);
+  if (v < 10) (whoToSend ? MYSERIAL_MICROUSB.write('0') :  MYSERIAL.write('0'));
+  whoToSend ? MYSERIAL_MICROUSB.print(v, DEC) : MYSERIAL.print(v, DEC);
 }
 //------------------------------------------------------------------------------
 /** %Print a directory date field to Serial.
@@ -994,10 +994,10 @@ static void print2u( uint8_t v) {
  * \param[in] fatDate The date field from a directory entry.
  */
 void SdBaseFile::printFatDate(uint16_t fatDate) {
-  canBeSwitch ? MYSERIAL_MICROUSB.print(FAT_YEAR(fatDate)) : MYSERIAL.print(FAT_YEAR(fatDate));
-  canBeSwitch ? MYSERIAL_MICROUSB.write('-') : MYSERIAL.write('-');
+  whoToSend ? MYSERIAL_MICROUSB.print(FAT_YEAR(fatDate)) : MYSERIAL.print(FAT_YEAR(fatDate));
+  whoToSend ? MYSERIAL_MICROUSB.write('-') : MYSERIAL.write('-');
   print2u( FAT_MONTH(fatDate));
-  canBeSwitch ? MYSERIAL_MICROUSB.write('-') : MYSERIAL.write('-');
+  whoToSend ? MYSERIAL_MICROUSB.write('-') : MYSERIAL.write('-');
   print2u( FAT_DAY(fatDate));
 }
 
@@ -1011,9 +1011,9 @@ void SdBaseFile::printFatDate(uint16_t fatDate) {
  */
 void SdBaseFile::printFatTime( uint16_t fatTime) {
   print2u( FAT_HOUR(fatTime));
-  canBeSwitch ? MYSERIAL_MICROUSB.write(':') : MYSERIAL.write(':');
+  whoToSend ? MYSERIAL_MICROUSB.write(':') : MYSERIAL.write(':');
   print2u( FAT_MINUTE(fatTime));
-  canBeSwitch ? MYSERIAL_MICROUSB.write(':') : MYSERIAL.write(':');
+  whoToSend ? MYSERIAL_MICROUSB.write(':') : MYSERIAL.write(':');
   print2u( FAT_SECOND(fatTime));
 }
 //------------------------------------------------------------------------------
@@ -1025,7 +1025,7 @@ void SdBaseFile::printFatTime( uint16_t fatTime) {
 bool SdBaseFile::printName() {
   char name[FILENAME_LENGTH];
   if (!getFilename(name)) return false;
-  canBeSwitch ? MYSERIAL_MICROUSB.print(name) : MYSERIAL.print(name);
+  whoToSend ? MYSERIAL_MICROUSB.print(name) : MYSERIAL.print(name);
   return true;
 }
 //------------------------------------------------------------------------------
