@@ -13,11 +13,11 @@ Marlin4AZOR has been created in collaboration with [JFonS](https://github.com/JF
 
 ## Release
 
-The stable release is AZOR 1.0 that you will find in master branch.
+"The stable release is AZOR 1.0 that you will find in Release branch"(Not Yet).
 
 ## Recent Changes
 
-No recent changes done.
+No recent changes have been done.
 
 ## Main Features
 
@@ -29,15 +29,17 @@ The main features of this marlin are:
 - Support for PTS-Panel.
 
 ## Requirements
-
+IMPORTANT!
 To compile this project it will be necessary to use [Arduino](https://www.arduino.cc) version 1.6.0 or later.
-In future will be needed the following libraries:
+To compile the program will be needed the following libraries:
 - **UsbFat**
-  - You can find it here: https://github.com/greiman/UsbFat
+  - You can find it here: https://github.com/didix21/UsbFat
 
 - **Usb_Host_Shield_2.0**
-  - This library is included in UsbFat but it is a modified version of Usb_Host_Shield_2.0, in case that you want the latest version you can find it in the following link: https://github.com/felis/USB_Host_Shield_2.0
-  
+  - You can find it here: https://github.com/didix21/USB_Host_Shield_2.0
+
+if you know how git works I recommend to clone both of them. Possible modifications will be needed in future.
+
 ## License
 
 Marlin is published under the [GPL license](/Documentation/License/GPL.md).
