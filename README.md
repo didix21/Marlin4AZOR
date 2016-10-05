@@ -5,7 +5,7 @@ This Repository contains a Marlin **BETA** firmware modified to be mainly used w
 
 ## About it
 
-Marlin4AZOR is a opensource beta firmware to be used exclusively with [AZOR 1.0](https://github.com/didix21/AZOR) electronic boards. I suggest don not use it with any other board because important modifications have been done to make it work with [SAM3X8E MCU](http://www.atmel.com/devices/ATSAM3X8E.aspx).
+Marlin4AZOR is a opensource beta firmware to be used exclusively with [AZOR 1.0](https://github.com/didix21/AZOR) electronic boards. I strongly recoommend do not use it with any other board because important modifications have been done to make it work with [SAM3X8E MCU](http://www.atmel.com/devices/ATSAM3X8E.aspx).
 
 This project is based on work done by [Wurstnase](https://github.com/Wurstnase) with [Marlin4Due](https://github.com/Wurstnase/Marlin4Due). 
 
@@ -13,7 +13,7 @@ Marlin4AZOR has been created in collaboration with [JFonS](https://github.com/JF
 
 ## Release
 
-"The stable release is AZOR 1.0 that you will find in Release branch"(Not Yet).
+"The stable release is AZOR 1.0 that you will find it in Release branch"(Not Yet).
 
 ## Recent Changes
 
@@ -29,7 +29,8 @@ The main features of this marlin are:
 - Support for PTS-Panel.
 
 ## Requirements
-IMPORTANT!
+
+**IMPORTANT**
 To compile this project it will be necessary to use [Arduino](https://www.arduino.cc) version 1.6.0 or later.
 To compile the program will be needed the following libraries:
 - **UsbFat**
@@ -48,18 +49,21 @@ AZOR 1.0 is an open board created by [Presolid S.L](http://presolid.com/es/). Yo
 
 - [Bulding Files]()
 
-## How to upload to AZOR 1.0
+## How to upload Marlin4AZOR firmware to AZOR 1.0
 
 This section contains all the information to compile and upload the program to AZOR 1.0.
  - Install the last version of [Arduino IDE](https://www.arduino.cc/en/Main/Software).
+ - Download or clone [UsbFat]() and [USB_Host_Shield_2.0]() libraries.
+ - if they have been download unzipid. 
+ - Place them at:
+    - Documents/Arduino/libraries 
  - Once it has been installed, open the program and then open the marlin with it. 
  - Now it has to select the board, to do that go to:
     - Tools -> Board
     - Select Arduino DUE (Native Port).
- - Select the port:
+ - Select the COM:
     - Tools -> Port
-    - And the corresponding COM.
- 
+    - And the corresponding COM. 
  - Compile the Marlin and upload it.
 
 ## License
