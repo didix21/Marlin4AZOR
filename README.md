@@ -1,7 +1,7 @@
 # Marlin4AZOR 3D Printer Firmware
 <img align="right" src="Documentation/LOGO/marlin_logo.png" />
 _______
-This Repository contains the Marlin firmware modified to be used with [AZOR 1.0](https://github.com/didix21/AZOR) boards. The main characteristics of this Marlin is that is ready to use with 32-bits MCU like **ATSAM3X8E**. The MCU which is used with [Arduino DUE](https://www.arduino.cc/en/Main/ArduinoBoardDue). 
+This Repository contains a Marlin **BETA** firmware modified to be mainly used with [AZOR 1.0](https://github.com/didix21/AZOR) boards. The main characteristic of this Marlin is that is ready to use with 32-bits MCU like **ATSAM3X8E**. The MCU which is used with [Arduino DUE](https://www.arduino.cc/en/Main/ArduinoBoardDue). 
 
 ## About it
 
@@ -17,7 +17,7 @@ Marlin4AZOR has been created in collaboration with [JFonS](https://github.com/JF
 
 ## Recent Changes
 
-No recent changes have been done.
+- Communicate with the PC and the PTS-Panel via serial communication at the same time. 
 
 ## Main Features
 
@@ -44,9 +44,9 @@ if you know how git works I recommend to clone both of them. Possible modificati
 
 ## About AZOR 1.0
 
-AZOR 1.0 is an open board created by [Presolid S.L](http://presolid.com/es/).
+AZOR 1.0 is an open board created by [Presolid S.L](http://presolid.com/es/). You can find more information about it [HERE]().
 
-- [Bulding Files]
+- [Bulding Files]()
 
 ## How to upload to AZOR 1.0
 
