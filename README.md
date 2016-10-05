@@ -38,7 +38,7 @@ To compile the program will be needed the following libraries:
 
 - **Usb_Host_Shield_2.0**
   - Download or clone from here: https://github.com/didix21/USB_Host_Shield_2.0.
-  - The original USB_Host_Shield_2.0 can be found [HERE](https://github.com/felis/USB_Host_Shield_2.0). ** IMPORTANT ** If you want to use it for AZOR download from the first link.
+  - The original **USB_Host_Shield_2.0** can be found [HERE](https://github.com/felis/USB_Host_Shield_2.0). ** IMPORTANT ** If you want to use it for AZOR download from the first link.
 
 if you know how git works I recommend to clone both of them. Possible modifications will be needed in future.
 
@@ -47,11 +47,20 @@ if you know how git works I recommend to clone both of them. Possible modificati
 AZOR 1.0 is an open board created by [Presolid S.L](http://presolid.com/es/).
 
 - [Bulding Files]
-___________
 
 ## How to upload to AZOR 1.0
 
-
+This section contains all the information to compile and upload the program to AZOR 1.0.
+ - Install the last version of [Arduino IDE](https://www.arduino.cc/en/Main/Software).
+ - Once it has been installed, open the program and then open the marlin with it. 
+ - Now it has to select the board, to do that go to:
+    - Tools -> Board
+    - Select Arduino DUE (Native Port).
+ - Select the port:
+    - Tools -> Port
+    - And the corresponding COM.
+ 
+ - Compile the Marlin and upload it.
 
 ## License
 
