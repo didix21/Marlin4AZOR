@@ -1,33 +1,46 @@
-# README #
+# Marlin4AZOR 3D Printer Firmware
+<img align="right" src="Documentation/LOGO/marlin_logo.png" />
 
-This README would normally document whatever steps are necessary to get your application up and running.
+This Repository contains the Marlin firmware modified to be used with [AZOR 1.0](https://github.com/didix21/AZOR) boards.  
 
-### What is this repository for? ###
+## About it
 
-This repository contains all the building board files for AZOR 1.0, right now is a prototype. Thus, it is recommended not use this files. 
+Marlin4AZOR is a opensource beta firmware to be used exclusively with [AZOR 1.0](https://github.com/didix21/AZOR) electronic boards. I suggest don't use it with any other board because important modifications have been done to make it work with [SAM3X8E MCU](http://www.atmel.com/devices/ATSAM3X8E.aspx).
 
-### Changes to be done ####
+This project is based on work done by [Wurstnase](https://github.com/Wurstnase) with [Marlin4Due](https://github.com/Wurstnase/Marlin4Due). 
 
-* ADD SPI PORT.
-* Change Motor Wire. ### DONE ###
-* Change clock.
-* Serigraph.
-* Botons. ### DONE ###
-* LEDS (Blue (power)).
-* XMOT/STOP change for STOP/XMOT.
-* Change U11 -> E2, U8 -> E1, U5 -> X, U7 -> Y, U6 -> Z.
-* Serigraph PTS-Panel, change the side where the number one is situated.
-* Fix Track. ###DONE###
-* Change Hottend connector.
-* ADD SOFT SPI SUPPORT PINS.
-* LEDs was soldered in the correct position. 
+Marlin4AZOR has been created in collaboration with [JFonS](https://github.com/JFonS).
+
+## Release
+
+The stable release is AZOR 1.0 that you will find in master branch.
+
+## Recent Changes
+
+No recent changes done.
+
+## Main Features
+
+The main features of this marlin are:
+
+- Support for 32-bits MCU.
+- Implemented M408: Report JSON-style response.
+- Support for USB Stick.
+- Support for PTS-Panel.
+
+## Requirements
+
+To compile this project it will be necessary to use [Arduino](https://www.arduino.cc) version 1.6.0 or later.
+In future will be needed the following libraries:
+- **UsbFat**
+  - You can find it here: https://github.com/greiman/UsbFat
+
+- **Usb_Host_Shield_2.0**
+  - This library is included in UsbFat but it is a modified version of Usb_Host_Shield_2.0, in case that you want the latest version you can find it in the following link: https://github.com/felis/USB_Host_Shield_2.0
+  
+## License
+
+Marlin is published under the [GPL license](/Documentation/License/GPL.md).
 
 
 
-
-### Contribution guidelines ###
-
-
-### Who do I talk to? ###
-
-* Admin: For more information, send a message to didaccoll@gmail.com
