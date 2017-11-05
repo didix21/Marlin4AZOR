@@ -1,5 +1,5 @@
 # Marlin4AZOR 3D Printer Firmware
-======================================
+
 ![version-image](https://badge.fury.io/gh/didix21%2FMarlin4AZOR.svg)
 <img align="right" src="Documentation/LOGO/marlin_logo.png" />
 _______
