@@ -1,4 +1,6 @@
 # Marlin4AZOR 3D Printer Firmware
+======================================
+![version-image](https://badge.fury.io/gh/didix21%2FMarlin4AZOR.svg)
 <img align="right" src="Documentation/LOGO/marlin_logo.png" />
 _______
 This Repository contains a Marlin **BETA** firmware modified to be mainly used with [AZOR 1.0]() boards. The main characteristic of this Marlin is that is ready to use with 32-bits MCU like **ATSAM3X8E**. The MCU which is used with [Arduino DUE](https://www.arduino.cc/en/Main/ArduinoBoardDue). 
